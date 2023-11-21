@@ -1,6 +1,7 @@
 # Examen 1
 
-![Imagen de presentación]([enlace/a/la/imagen.jpg](https://www.google.com/url?sa=i&url=https%3A%2F%2Fconfilegal.com%2F20231028-ciberseguridad-en-la-administracion-local-un-desafio-legal-y-tecnologico%2F&psig=AOvVaw2huvhRRKYtnEBcFLtSLrRi&ust=1700654184627000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCLCS3NaE1YIDFQAAAAAdAAAAABAE))
+![Imagen de presentación](https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.seguritecnia.es%2Ftecnologias-y-servicios%2Fciberseguridad%2Fciberseguridad-en-los-sistemas-electronicos-de-seguridad_20220601.h
+
 
 ## [Licencia](LICENSE)
 
