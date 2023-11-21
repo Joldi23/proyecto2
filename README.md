@@ -56,6 +56,26 @@ GitHub proporciona diversas características de seguridad para salvaguardar el c
 
 
 ### 2. Salvaguardas para evitar la filtración de datos de los exámenes
+#### Salvaguardas para Evitar la Filtración de Datos en Exámenes
+
+Para prevenir la filtración de datos de los exámenes entre grupos, especialmente cuando se dividen en dos, se proponen las siguientes salvaguardas:
+
+1. **Separación física o lógica:**
+   - Garantizar que los dos grupos estén físicamente separados durante el examen para prevenir la comunicación no autorizada.
+   - Emplear plataformas de evaluación en línea que permitan la creación de salas de examen virtuales para cada grupo, asegurando una separación lógica.
+
+2. **Aleatorización de preguntas y respuestas:**
+   - Generar distintas versiones del examen para cada grupo, con preguntas y respuestas aleatorizadas.
+   - Dificultar la posibilidad de compartir respuestas, ya que cada grupo tendrá un conjunto único de preguntas.
+
+3. **Supervisión proactiva:**
+   - Asignar supervisores o profesores a cada grupo para vigilar y prevenir cualquier intento de comunicación no autorizada.
+   - Utilizar herramientas de monitoreo en línea para detectar patrones sospechosos de comportamiento durante el examen.
+
+4. **Encriptación de documentos:**
+   - Utilizar encriptación para proteger los documentos del examen, tanto en formato físico como digital, asegurando que solo los destinatarios autorizados tengan acceso.
+
+Estas salvaguardas combinadas ayudarán a fortalecer la integridad del proceso de evaluación y a prevenir posibles filtraciones de datos entre grupos durante los exámenes.
 
 ...
 
