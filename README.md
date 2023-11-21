@@ -14,7 +14,7 @@ Este proyecto está bajo la [Licencia MIT](LICENSE).
 
 GitHub proporciona diversas características de seguridad para salvaguardar el código y secretos en repositorios y organizaciones. A continuación se presenta un resumen de las debilidades y fortalezas principales basadas en estas características:
 
-## Debilidades
+#### Debilidades
 
 1. **Directiva de Seguridad:**
    - Permite a los usuarios reportar confidencialmente vulnerabilidades.
@@ -41,7 +41,7 @@ GitHub proporciona diversas características de seguridad para salvaguardar el c
 8. **Revisión de Dependencias (Disponible con GitHub Advanced Security):**
    - Muestra el impacto de cambios en dependencias y versiones vulnerables.
 
-## Fortalezas
+#### Fortalezas
 
 1. **GitHub Free para cuentas personales:**
    - Incluye diversas características gratuitas como GitHub Community Support, Dependabot Alerts, Reglas de Protección de Implementación para Repositorios Públicos, Aplicación de Autenticación en Dos Fases, entre otros.
