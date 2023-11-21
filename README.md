@@ -60,5 +60,31 @@ GitHub proporciona diversas características de seguridad para salvaguardar el c
 ...
 
 ### 3. Explicar brevemente el funcionamiento de la máquina Enigma
+#### Funcionamiento de la Máquina Enigma
 
-...
+La Máquina Enigma fue un dispositivo de cifrado utilizado durante la Segunda Guerra Mundial. A continuación, se explica brevemente su funcionamiento:
+
+1. **Teclado:**
+   - El operador ingresaba el mensaje original letra por letra utilizando el teclado.
+
+2. **Rotores:**
+   - La máquina tenía rotores que giraban mecánicamente, cambiando la correspondencia entre las letras del teclado y las letras cifradas con cada pulsación de tecla.
+
+3. **Tablero de conexiones (Reflector):**
+   - Después de pasar por los rotores, la señal se dirigía hacia un tablero de conexiones que invertía algunas letras antes de enviarlas de vuelta a través de los rotores.
+
+4. **Lámparas indicadoras:**
+   - La letra resultante se iluminaba en un conjunto de lámparas, mostrando así la letra cifrada.
+
+5. **Configuración inicial:**
+   - La clave de cifrado se establecía mediante la posición inicial de los rotores y la configuración del tablero de conexiones. Esta configuración cambiaba a diario.
+
+6. **Cambio de configuración:**
+   - Después de cifrar cada letra, los rotores avanzaban, cambiando la configuración de la máquina para la siguiente letra del mensaje.
+
+7. **Complejidad y seguridad:**
+   - La Máquina Enigma ofrecía una seguridad aparentemente alta debido a la complejidad de su diseño y la variabilidad constante de la configuración. Sin embargo, los Aliados lograron descifrar los mensajes Enigma, lo que fue crucial para la guerra.
+
+A pesar de su sofisticación para su época, la Máquina Enigma finalmente fue descifrada, destacando la importancia de los avances en criptoanálisis durante la guerra.
+
+
