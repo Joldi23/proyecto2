@@ -1,6 +1,6 @@
 # Examen 1
 
-![Imagen de presentación](https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.seguritecnia.es%2Ftecnologias-y-servicios%2Fciberseguridad%2Fciberseguridad-en-los-sistemas-electronicos-de-seguridad_20220601.h
+![Imagen de presentación](https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.seguritecnia.es%2Ftecnologias-y-servicios%2Fciberseguridad%2Fciberseguridad-en-los-sistemas-electronicos-de-seguridad_20220601.h)
 
 
 ## [Licencia](LICENSE)
