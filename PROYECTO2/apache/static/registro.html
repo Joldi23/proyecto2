@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APP PEPS</title>
+    <style>
+        .error{
+            display: none;
+            color: red;
+        }
+    </style>
+    <script>
+        var myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        function conectar(){
+            document.getElementsByClassName("error")[0].style.display="none";
+            var raw = JSON.stringify({
+                "dni": document.getElementById("dni").value,
+                "passwordd": document.getElementById("passwordd").value,
+                "apellido1": document.getElementById("apellido1").value,
+                "apellido2": document.getElementById("apellido2").value,
+                "apellido1": document.getElementById("apellido1").value,
+                "email": document.getElementById("email").value,
+                "telefono": document.getElementById("apellido1").value,
+                "fecha_nacimiento": document.getElementById("apellido1").value
+
+            });
+
+            var requestOptions = {
+                method: 'POST',
+                headers: myHeaders,
+                body: raw
+            };
+
+            fetch("/registro", requestOptions)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status=="OK"){
+                        alert("Usuario registrado correctamente");
+                        location.href="index.html";
+                    } else {
+                        document.getElementsByClassName("error")[0].style.display="block";
+                    }
+                })
+                .catch(error => console.log('error', error)); 
+        }
+    </script>
+</head>
+<body>
+    <h1>REGISTRO DEL SISTEMA</h1>
+    
+    <label for="dni">DNI: </label>
+    <input type="text" name="dni" id="dni" required><br>
+    
+    <label for="nombre">Nombre: </label>
+    <input type="text" name="nombre" id="nombre" required><br>
+    
+    <label for="apellido1">Apellido1: </label>
+    <input type="text" name="apellido1" id="apellido1" required><br>
+
+    <label for="apellido2">Apellido2: </label>
+    <input type="text" name="apellido2" id="apellido2" required><br>
+    
+    <label for="email">Correo Electrónico: </label>
+    <input type="email" name="email" id="email" required><br>
+
+    <label for="passwordd">Contraseña: </label>
+    <input type="password" name="passwordd" id="passwordd" required><br>
+    
+    <label for="telefono">Teléfono:</label>
+    <input type="text" name="telefono" id="telefono"><br>
+   
+    <label for="fecha_nacimiento">Fecha de Nacimiento</label>
+    <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" required><br>
+    
+    <button type="button" onclick="conectar()">ENVIAR</button>
+</body>
+
+</html>
