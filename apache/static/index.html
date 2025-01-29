@@ -2,24 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APP PEPS</title>
-    <style>
-        .error{
-            display: none;
-            color: red;
-        }
-    </style>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Login - BodyCount</title>
+    <link rel="stylesheet" href="styles.css">
     <script>
         var myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
 
-        function conectar(){
-            document.getElementsByClassName("error")[0].style.display="none";
+        function conectar() {
+            document.getElementsByClassName("error")[0].style.display = "none";
             var raw = JSON.stringify({
                 "username": document.getElementById("username").value,
-                "password": document.getElementById("password").value
+                "password": document.getElementById("passwordd").value
             });
 
             var requestOptions = {
@@ -31,22 +26,37 @@
             fetch("/api/login", requestOptions)
                 .then(response => response.json())
                 .then(result => {
-                    if (result.status=="OK"){
-                        location.href="juegos.html";
+                    if (result.status === "OK") {
+                        location.href = "juegos.html";
                     } else {
-                        document.getElementsByClassName("error")[0].style.display="block";
+                        document.getElementsByClassName("error")[0].textContent = "Usuario/clave errónea";
+                        document.getElementsByClassName("error")[0].style.display = "block";
                     }
                 })
-                .catch(error => console.log('error', error)); 
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementsByClassName("error")[0].textContent = "Error en la conexión con el servidor.";
+                    document.getElementsByClassName("error")[0].style.display = "block";
+                });
         }
     </script>
 </head>
 <body>
-    <h1>Bienvenido a BodyCount</h1>
-    <label>Usuario</label><input type="text" name="username" id="username"><br>
-    <label>Clave</label><input type="password" name="passwordd" id="passwordd"><br>
-    <label class="error">Usuario/clave erronea</label>
-    <button type="button" onclick="conectar()">ENVIAR</button>
-    <button type="button" onclick="location.href='registro.html'">REGISTRARSE</button>
+    <div class="form-container">
+        <h1>Bienvenido a BodyCount</h1>
+        <form>
+            <label for="username">Usuario</label>
+            <input type="text" name="username" id="username" placeholder="Ingresa tu usuario">
+            
+            <label for="passwordd">Clave</label>
+            <input type="password" name="password" id="passwordd" placeholder="Ingresa tu clave">
+            
+            <span class="error">Usuario/clave errónea</span>
+            
+            <button type="button" onclick="conectar()">ENVIAR</button>
+            <button type="button" onclick="location.href='registro.html'">REGISTRARSE</button>
+        </form>
+        <p>HOLA HAS HECHO UN CAMBIO
+    </div>
 </body>
 </html>

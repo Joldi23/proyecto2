@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
+    <title>Área Personal</title>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("/api/membresia", { method: "GET" })
+                .then(response => response.json())
+                .then(data => {
+                    const infoContainer = document.getElementById("info-container");
+                    const fotoContainer = document.getElementById("foto-container");
+
+                    if (data.status === "OK") {
+                        const { nombre, apellido1, apellido2, email, telefono, fecha_nacimiento, membresia, foto } = data;
+
+                        infoContainer.innerHTML = `
+                            <h1>Datos Personales</h1>
+                            <p><strong>Nombre y apellidos:</strong> ${nombre} ${apellido1} ${apellido2}</p>
+                            <p><strong>Email:</strong> ${email}</p>
+                            <p><strong>Teléfono:</strong> ${telefono}</p>
+                            <p><strong>Fecha de nacimiento:</strong> ${fecha_nacimiento}</p>
+                            <p><strong>Membresía:</strong> ${membresia ? membresia : "No tienes membresía activa"}</p>
+                           
+                        `;
+                        fotoContainer.innerHTML = `
+                        
+                        <figure class="image is-48x48">
+                            <img src="/${foto}" alt="Foto de perfil" style="border-radius: 50%;">
+                        </figure>
+                    `;
+
+
+                        // Obtener el DNI de la API
+                        fetch("/api/obtener_dni", { method: "GET" })
+                            .then(response => response.json())
+                            .then(dniData => {
+                                if (dniData.status === "OK" && dniData.dni) {
+                                    // Modificar el enlace con el DNI
+                                    const enlaceModificar = document.getElementById("modificar-enlace");
+                                    enlaceModificar.href = `/mod.html?dni=${dniData.dni}`; // Añadir el DNI a la URL
+
+                                    // Crear el nuevo enlace para subir.html
+                                    const enlaceSubir = document.createElement("a");
+                                    enlaceSubir.className = "navbar-item";
+                                    enlaceSubir.href = `/subida.html?dni=${dniData.dni}`;
+                                    enlaceSubir.textContent = "Cambiar foto";
+                                    
+                                    // Añadir el nuevo enlace al DOM
+                                    infoContainer.appendChild(enlaceSubir);
+                                } else {
+                                    alert("Error al obtener el DNI.");
+                                    location.href = "/index.html"; // Redirigir si no hay sesión activa
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Error al obtener el DNI:", error);
+                            });
+
+                    } else {
+                        infoContainer.innerHTML = "No se pudo obtener tu información. Por favor, inicia sesión nuevamente.";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al obtener los datos:", error);
+                    const infoContainer = document.getElementById("info-container");
+                    infoContainer.innerHTML = "Ocurrió un error al cargar tu información.";
+                });
+        });
+
+        function cerrarSesion() {
+            fetch("/api/logout", { method: "GET" })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === "OK") {
+                        location.href = "/index.html";
+                    } else {
+                        alert("No se pudo cerrar sesión.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al cerrar sesión:", error);
+                    alert("Se produjo un error al intentar cerrar sesión.");
+                });
+        }
+    </script>
+</head>
+<body>
+    <nav class="navbar is-warning" role="navigation" aria-label="main navigation">
+        <div class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" href="/juegos.html">Inicio</a>
+                <a class="navbar-item" href="javascript:cerrarSesion()">Cerrar sesión</a>
+            </div>
+            <div class="navbar-end">
+                <div class="navbar-item" id="foto-container">
+                    <!-- Aquí se insertará la imagen -->
+                </div>
+            </div>
+        </div>
+    </nav>
+    <h1 class="title">Área Personal</h1>
+    <div id="info-container">
+        Cargando tu información...
+    </div>
+    <!-- Enlace para modificar datos personales -->
+    <a class="navbar-item" href="#" id="modificar-enlace">Modificar Datos Personales</a>
+    <h2 class="title">Mis clases</h2>
+    <div id="info-container2">
+    </div>
+    <p>HAs echo un cambio</p>
+</body>
+</html>

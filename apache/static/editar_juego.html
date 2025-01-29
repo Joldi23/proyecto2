@@ -4,78 +4,127 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EJEMPLO APP WEB CON CRUD</title>
+    <title>Editar Datos Personales</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
     <script>
-        var myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        var queryString = window.location.search;
-        var urlParams = new URLSearchParams(queryString);
-        var id = urlParams.get('id');
-        onload=function(){
-            obtenerDatosJuego(id);
-        }
-        function obtenerDatosJuego(id){
-            var requestOptions = {
-                method: 'GET'
-            };
+        const queryString = window.location.search; 
+        const urlParams = new URLSearchParams(queryString); 
+        const id_clase = urlParams.get('id_clase');
 
-            fetch("/juego/"+id, requestOptions)
+        if (!id_clase) {
+            console.error("El parámetro 'id_clase' no está presente en la URL.");
+            alert("No se encontró el parámetro id_clase en la URL.");
+            location.href = "/juegos.html"; 
+        } else {
+            console.log("ID Clase obtenido:", id_clase);
+        }
+
+        window.onload = function() {
+            obtenerDatosClase(id_clase);
+        };
+
+        function obtenerDatosClase(id_clase) {
+            fetch(`/api/clase/${id_clase}`, { method: 'GET' })
                 .then(response => response.json())
-                .then(result => pintarJuego(result))
+                .then(result => pintarClase(result))
                 .catch(error => {
-                    console.log('error', error)
+                    console.error('Error:', error);
                     alert("Ha habido un error al recuperar los datos del juego");
-                    location.href="/static/juegos.html";
+                    location.href = "/juegos.html";
                 });
+        }
 
-        }
-        function pintarJuego(juego){
-            document.getElementById("nombre").value=juego.nombre;
-            descripcion=document.getElementById("descripcion").value=juego.descripcion;
-            precio=document.getElementById("precio").value=juego.precio;
-            document.getElementById("foto").value=juego.foto;
-        }
-        function guardar(){            
-            let nombre=document.getElementById("nombre").value;
-            let descripcion=document.getElementById("descripcion").value;
-            let precio=document.getElementById("precio").value;
-            let foto=document.getElementById("foto").value;
-            let datos=JSON.stringify({
-                "id":id,
-                "nombre":nombre,
-                "descripcion":descripcion,
-                "precio": precio,
-                "foto":foto
-            });
+        function eliminar(id){
             var requestOptions = {
-                method: 'PUT',
-                headers: myHeaders,
-                body: datos
+                method: 'DELETE'
             };
 
-            fetch("/juegos", requestOptions)
+            fetch(`/api/eliminar/${id_clase}`, requestOptions)
                 .then(response => response.json())
                 .then(result => {
                     if (result.status == "OK"){
-                        alert("Juego modificado")
-                        location.href="/static/juegos.html"
+                        alert("Juego eliminado")
+                        location.href = "/juegos.html";
                     } else {
-                        alert("El juego no ha podido ser modificado")
+                        alert("El juego no ha podido ser eliminado")
                     }
                 })
                 .catch(error => {
                     console.log('error', error);
-                    alert("Se ha producido un error y el juego no ha podido ser modificado")
+                    alert("Se ha producido un error y el juego no ha podido ser eliminado")
                 });
         }
+
+        function pintarClase(clase) {
+            console.log(clase);
+
+            document.getElementById("id_clase").value = clase.id_clase || '';
+            document.getElementById("id_entrenador").value = clase.id_entrenador || '';
+            document.getElementById("nombre").value = clase.nombre || '';
+            document.getElementById("capacidad").value = clase.capacidad || '';
+            document.getElementById("duracion_minutos").value = clase.duracion_minutos || '';
+    
+            
+            if (clase.horario) {
+                const horario = new Date(clase.horario);
+                const horarioFormateado = horario.toISOString().slice(0, 16); 
+                document.getElementById("horario").value = horarioFormateado;
+            }
+        }
+
+        function guardar() {
+            const id_clase = document.getElementById("id_clase").value;
+            const nombre = document.getElementById("nombre").value;
+            const id_entrenador = document.getElementById("id_entrenador").value;
+            const capacidad = document.getElementById("capacidad").value;
+            const horario = document.getElementById("horario").value;
+            const duracion_minutos = document.getElementById("duracion_minutos").value;
+
+            // Formatear el horario en el formato correcto para el backend
+            const horarioFormateado = new Date(horario).toISOString().replace("T", " ").slice(0, 19);
+
+            // Crear el objeto con los datos a enviar
+            const datos = JSON.stringify({
+                id_clase,        // ID de la clase
+                nombre,          // Nombre de la clase
+                id_entrenador,   // ID del entrenador (puede cambiar)
+                capacidad,       // Capacidad de la clase
+                horario: horarioFormateado, // Horario formateado
+                duracion_minutos // Duración de la clase en minutos
+    });
+
+    // Configuración de la solicitud
+    const requestOptions = {
+        method: 'PUT', // Actualización (PUT)
+        headers: {
+            'Content-Type': 'application/json', // Tipo de contenido JSON
+        },
+        body: datos // Cuerpo de la solicitud
+    };
+
+    // Realizar la solicitud al endpoint de actualización
+    fetch(`/api/actualizar/${id_clase}`, requestOptions)
+        .then(response => response.json())
+        .then(result => {
+            if (result.status === "OK") {
+                alert("Juego actualizado correctamente");
+                location.href = "/juegos.html"; // Redirige a la página de juegos
+            } else {
+                alert(result.message || "No se pudo actualizar el juego");
+            }
+        })
+        .catch(error => {
+            console.error("Error al actualizar el juego:", error);
+            alert("Error al actualizar el juego. Inténtalo de nuevo.");
+        });
+}
+
     </script>
 </head>
 <body>
     <nav class="navbar is-warning" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
-            <button class="navbar-burger is-warning button" aria-label="menu" aria-expanded="false"
-                data-target="navbarBasicExample">
+            <button class="navbar-burger is-warning button" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
                 <span aria-hidden="true"></span>
                 <span aria-hidden="true"></span>
                 <span aria-hidden="true"></span>
@@ -83,31 +132,39 @@
         </div>
         <div class="navbar-menu">
             <div class="navbar-start">
-                <a class="navbar-item" href="/static/juegos">Juegos</a>
-            </div>
-            <div class="navbar-end">
-                <div class="navbar-item">
-                </div>
+                <a class="navbar-item" href="/juegos.html">Juegos</a>
             </div>
         </div>
     </nav>
-  <section class="section">
-    <div class="columns">
-        <div class="column">
-            <h3 class="is-size-3">Editar juego</h3>
+
+    <section class="section">
+        <div class="columns">
+            <div class="column">
+                <h3 class="is-size-3">Editar Clase</h3>
+                
+                <label for="id_clase">Clase:</label>
+                <input type="text" class="input" name="id_clase" id="id_clase" readonly>
+
+                <label for="id_entrenador">Entrenador:</label>
+                <input type="text" class="input" name="id_entrenador" id="id_entrenador">
+
                 <label for="nombre">Nombre:</label>
-                <input required type="text" class="input" placeholder="Nombre" name="nombre" id="nombre">
-                <label for="descripcion">Descripción</label>
-                <input required type="text" class="input" placeholder="Descripción" name="descripcion" id="descripcion">
-                <label for="precio">Precio</label>
-                <input required type="number" class="input" placeholder="Precio" name="precio" id="precio">
-                <label for="foto">Foto</label>
-                <input required type="text" class="input" placeholder="Foto" name="foto" id="foto">
+                <input type="text" class="input" name="nombre" id="nombre">
+
+                <label for="capacidad">Capacidad:</label>
+                <input type="text" class="input" name="capacidad" id="capacidad">
+
+                <label for="horario">Horario:</label>
+                <input type="datetime-local" class="input" name="horario" id="horario">
+
+                <label for="duracion_minutos">Duración:</label>
+                <input type="text" class="input" name="duracion_minutos" id="duracion_minutos">
+
                 <button type="button" onclick="guardar()" class="button is-success mt-2">Guardar</button>
-                <a href="/static/juego.html" class="button is-primary mt-2">Volver</a>
-            </form>
+                <button type="button" onclick="eliminar()" class="button is-success mt-2">Eliminar</button>
+                <a href="/juegos.html" class="button is-primary mt-2">Volver</a>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 </body>
 </html>

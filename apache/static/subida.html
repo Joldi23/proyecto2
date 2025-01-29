@@ -2,68 +2,106 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Subir Archivo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
     <script>
-        var myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-        function enviarArchivo(){
-            const formData = new FormData();
-            formData.append('fichero',document.getElementById("fichero").files[0]);
-            formData.append('nombre',document.getElementById("nombre").value);
-            var requestOptions = {
-                method: 'POST',
-                body: formData
-            };
+        document.addEventListener("DOMContentLoaded", function () {
+            // Obtener el DNI de la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const dni = urlParams.get('dni');
 
-            fetch("/upload", requestOptions)
+            if (!dni) {
+                alert("DNI no encontrado en la URL. Redirigiendo...");
+                window.location.href = "/index.html"; // Redirigir si no hay DNI en la URL
+            }
+
+            // Cargar foto desde la sesión si existe
+            fetch(`/api/getUserPhoto?dni=${dni}`)
                 .then(response => response.json())
-                .then(result => {
-                    if (result.status == "OK"){
-                        alert("archivo subido correctamente");
-                        location.href="index.html"
-                    } else {
-                        alert("El archivo no ha podido subirse");
+                .then(data => {
+                    if (data.status === "OK" && data.foto) {
+                        const preview = document.getElementById("preview");
+                        const timestamp = new Date().getTime(); // Timestamp único
+                        preview.src = `/${data.foto}?t=${timestamp}`; // Agregar timestamp a la URL
+                        preview.style.display = "block"; // Mostrar la imagen
                     }
                 })
-                .catch(error => {
-                    console.log('error', error);
-                    alert("Ha habido un error al recuperar el archivo. Refresque la página")
-                });
-        }
+                .catch(error => console.error("Error al obtener la foto:", error));
 
-        function verArchivo(){
-            var requestOptions = {
-                method: 'GET',
-            };
+            // Configurar el formulario de subida
+            const form = document.getElementById("uploadForm");
+            form.addEventListener("submit", function (e) {
+                e.preventDefault(); // Evitar el comportamiento predeterminado del formulario
 
-            fetch("/ver/" + document.getElementById("nombreArchivo").value, requestOptions)
-                .then(response => response.json())
-                .then(result => {
-                    if (result.status == "OK"){
-                        document.getElementById("contenidoArchivo").innerHTML=result.contenido;
-                    } else {
-                        document.getElementById("contenidoArchivo").innerHTML="EL CONTENIDO NO ESTA DISPONIBLE";                        
-                    }
+                // Crear un objeto FormData para enviar el archivo y el DNI
+                const formData = new FormData();
+                const fileInput = document.getElementById("fileInput");
+                const file = fileInput.files[0];
+
+                if (!file) {
+                    alert("Por favor, selecciona un archivo para subir.");
+                    return;
+                }
+
+                formData.append("fichero", file);
+                formData.append("dni", dni);
+
+                // Enviar la solicitud de subida al servidor usando PUT
+                fetch("/api/update", {
+                    method: "PUT",
+                    body: formData
                 })
-                .catch(error => {
-                    console.log('error', error);
-                    alert("Ha habido un error al recuperar el archivo. Refresque la página")
-                });
-        }
- 
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "OK") {
+                            alert("Archivo subido correctamente. Ruta: " + data.ruta);
+                            // Actualizar la vista con la nueva foto
+                            const preview = document.getElementById("preview");
+                            const timestamp = new Date().getTime(); // Timestamp único
+                            preview.src = `/${data.ruta}?t=${timestamp}`; // Actualizar la ruta con timestamp
+                            preview.style.display = "block"; // Mostrar la imagen
+
+                            // Redirigir a /juegos.html después de que todo haya ido bien
+                            setTimeout(() => {
+                                window.location.href = "/juegos.html"; // Redirige después de un pequeño retraso
+                            }, 1000); // Retraso de 1 segundo para permitir que el usuario vea el mensaje
+                        } else {
+                            alert("Error al subir el archivo: " + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error al subir el archivo:", error);
+                        alert("Se produjo un error al intentar subir el archivo.");
+                    });
+            });
+        });
     </script>
 </head>
 <body>
-    <h1>SUBIR UN ARCHIVO</h1>
-        <label>Nombre archivo</label><input type="text" name="nombre" id="nombre"><br>
-        <label>Archivo</label><input type="file" name="fichero" id="fichero"><br>
-        <button type="button" onclick="enviarArchivo()">ENVIAR</button><br>
-    <h1>VER CONTENIDO DE UN ARCHIVO</h1>
-    <label>Nombre archivo</label><input type="text" name="nombreArchivo" id="nombreArchivo"><br>
-    <button type="button" onclick="verArchivo()">Ver</button><br>
-    <label>Contenido archivo</label><textarea id="contenidoArchivo"></textarea><br>
-
+    <section class="section">
+        <div class="container">
+            <h1 class="title">Subir Archivo</h1>
+            <form id="uploadForm">
+                <div class="field">
+                    <label class="label">Selecciona un archivo</label>
+                    <div class="control">
+                        <input class="input" type="file" id="fileInput" name="fichero" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <button class="button is-primary" type="submit">Subir</button>
+                    </div>
+                </div>
+            </form>
+            <div class="field mt-5">
+                <label class="label">Vista previa de la imagen</label>
+                <div class="control">
+                    <img id="preview" src="#" alt="Vista previa" style="display: none; max-width: 200px; border: 1px solid #ccc;">
+                </div>
+            </div>
+        </div>
+    </section>
 </body>
 </html>

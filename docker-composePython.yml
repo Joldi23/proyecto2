@@ -12,10 +12,9 @@ services:
     volumes:
       - ./mariadb_data:/var/lib/mysql
       - ./Juegos.sql:/docker-entrypoint-initdb.d/Juegos.sql
-    user: mysql
+    user: root
     ports:
       - 3306:3306
-  
   phpmyadmin:
     image: phpmyadmin
     container_name: phpmyadmin
@@ -26,7 +25,13 @@ services:
       - 9093:80
     depends_on:
       - mariadb
-  
+  apache:
+    container_name: apache
+    build: ./apache
+    ports:
+      - 7777:80
+    volumes:
+      - apache_fotos:/var/www/html/fotos 
   python:
     build: .
     container_name: python
@@ -38,12 +43,12 @@ services:
       DB_PORT: 3306
       PORT: 8080
       HOST: 0.0.0.0
+    volumes:
+      - apache_fotos:/var/www/html/fotos  
     ports:
       - 9094:8080
     depends_on:
-        - mariadb
-  apache:
-      container_name: apache
-      build: ./apache
-      ports:
-        - 9092:80
+      - mariadb
+
+volumes:
+  apache_fotos: 
