@@ -2,7 +2,7 @@ from flask import request, jsonify, session
 import json
 import decimal
 from __main__ import app
-import controlador_juegos
+import controlador_usuarios
 from bd import obtener_conexion
 
 class Encoder(json.JSONEncoder):
@@ -54,7 +54,7 @@ def bienvenido():
 def clase_por_id(id):
     try:
         id_int = int(id)
-        clase, code = controlador_juegos.obtener_clase_por_id(id_int)
+        clase, code = controlador_usuarios.obtener_clase_por_id(id_int)
         return json.dumps(clase, cls=Encoder), int(code)
     except ValueError:
         return json.dumps({"error": "ID inválido"}), 400
@@ -70,7 +70,7 @@ def obtener_dni_endpoint():
         if not email:
             return jsonify({"status": "ERROR", "mensaje": "No se ha iniciado sesión"}), 400
 
-        resultado = controlador_juegos.obtener_dni_por_usuario(email)
+        resultado = controlador_usuarios.obtener_dni_por_usuario(email)
         return jsonify(resultado)
 
     except Exception as e:
@@ -99,7 +99,7 @@ def guardar_clase():
                     "message": "El campo 'horario' debe estar en formato 'YYYY-MM-DD HH:MM:SS'"
                 }), 400
             
-            ret, code = controlador_juegos.insertar_clase(
+            ret, code = controlador_usuarios.insertar_clase(
                 dni=clase_json["dni"],
                 nombre=clase_json["nombre"],
                 capacidad=int(clase_json["capacidad"]),
@@ -136,7 +136,7 @@ def actualizar_clase_por_id(id_clase):
                     "message": "El campo 'horario' debe estar en formato 'YYYY-MM-DD HH:MM:SS'"
                 }), 400
 
-            ret, code = controlador_juegos.actualizar_clase(
+            ret, code = controlador_usuarios.actualizar_clase(
                 id_clase=id_clase,
                 id_entrenador=clase_json["id_entrenador"],  
                 nombre=clase_json["nombre"],
@@ -169,7 +169,7 @@ def actualizarDA(dni):
                 if field not in clase_json:
                     return json.dumps({"status": "Bad request", "message": f"Falta el campo: {field}"}), 400
 
-            ret, code = controlador_juegos.actualizarD(
+            ret, code = controlador_usuarios.actualizarD(
                 nombre=clase_json["nombre"],
                 apellido1=clase_json["apellido1"],
                 apellido2=clase_json["apellido2"],
@@ -179,9 +179,11 @@ def actualizarDA(dni):
                 num_tarjeta=clase_json.get("num_tarjeta")
             )
         except Exception as e:
-            print(f"Error al procesar la solicitud: {e}")
-            ret = {"status": "Failure", "message": "Error interno del servidor"}
+        # Imprimir el error completo en el log o la consola
+            app.logger.error(f"Error al registrar el usuario: {e}", exc_info=True)  # Esto mostrará la traza completa del error
+            ret = {"status": "ERROR", "mensaje": str(e)}
             code = 500
+
     else:
         ret = {"status": "Bad request", "message": "Content-Type debe ser application/json"}
         code = 400
@@ -191,7 +193,7 @@ def actualizarDA(dni):
 
 @app.route("/eliminar/<id>", methods=["DELETE"])
 def eliminar_clase(id):
-    ret,code=controlador_juegos.eliminar_clase(id)
+    ret,code=controlador_usuarios.eliminar_clase(id)
     return json.dumps(ret), code
 
 
@@ -199,7 +201,8 @@ def eliminar_clase(id):
 @app.route("/dni/<dni>", methods=["GET"])
 def obtenerD(dni):
     try:
-        clase, code = controlador_juegos.obtener_datos(dni)
+        clase, code = controlador_usuarios.obtener_datos(dni)
         return json.dumps(clase, cls=Encoder), code 
     except ValueError:
         return json.dumps({"error": "ID inválido"}), 400
+

@@ -14,7 +14,9 @@ CREATE TABLE usuarios (
     membresia BOOLEAN DEFAULT FALSE, 
     es_trabajador BOOLEAN DEFAULT FALSE, 
     descuento_trabajador DECIMAL(5, 2) DEFAULT 0.00,
-    password VARCHAR(255) NOT NULL -- Cambié "passwordd" por "password"
+    password VARCHAR(255) NOT NULL,
+    foto VARCHAR(255) NULL,
+    num_tarjeta VARCHAR(100)
 );
 
 -- Tabla Clases
@@ -32,9 +34,8 @@ CREATE TABLE clases (
 CREATE TABLE pagos (
     id_pago INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario VARCHAR(100) NOT NULL,
-    num_tarjeta VARCHAR(100),
     monto DECIMAL(10, 2) NOT NULL, 
     fecha_pago DATE DEFAULT CURRENT_DATE, 
-    metodo_pago VARCHAR(50) NOT NULL, 
     FOREIGN KEY (id_usuario) REFERENCES usuarios(dni) -- Corregí la referencia a "usuarios"
 );
+

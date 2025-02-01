@@ -18,8 +18,8 @@
                 .then(result => pintardatos(result))
                 .catch(error => {
                     console.error('Error:', error);
-                    alert("Ha habido un error al recuperar los datos del juego");
-                    location.href = "/juegos.html";
+                    alert("Ha habido un error al recuperar los datos del usuario");
+                    location.href = "/principal.html";
                 });
         }
 
@@ -42,7 +42,7 @@
             const telefono = document.getElementById("telefono").value;
             const num_tarjeta = document.getElementById("num_tarjeta").value;
 
-            const datos = JSON.stringify({ nombre, apellido1, apellido, email, telefono, num_tarjeta });
+            const datos = JSON.stringify({ nombre, apellido1, apellido2, email, telefono, num_tarjeta });
 
     const requestOptions = {
         method: 'PUT', 
@@ -53,15 +53,15 @@
         .then(response => response.json())
         .then(result => {
             if (result.status === "OK") {
-                alert("Juego actualizado correctamente");
-                location.href = "/juegos.html"; // Redirige a la página de juegos
+                alert("Usuario actualizado correctamente");
+                location.href = "/principal.html"; 
             } else {
-                alert(result.message || "No se pudo actualizar el juego");
+                alert(result.message || "No se pudo actualizar el usuario");
             }
         })
         .catch(error => {
-            console.error("Error al actualizar el juego:", error);
-            alert("Error al actualizar el juego. Inténtalo de nuevo.");
+            console.error("Error al actualizar el usuario:", error);
+            alert("Error al actualizar el usuario. Inténtalo de nuevo.");
         });
 }
        document.addEventListener("DOMContentLoaded", function () {
@@ -137,7 +137,7 @@
     <section class="section">
         <div class="columns">
             <div class="column">
-                <h3 class="is-size-3">Editar juego</h3>
+                <h3 class="is-size-3">Editar Usuario</h3>
                 
                 <label for="nombre">Nombre: </label>
                 <input type="text" name="nombre" id="nombre" required><br>
@@ -160,10 +160,8 @@
                 <input type="text" name="num_tarjeta" id="num_tarjeta" required><br>
 
                 <button type="button" onclick="guardar()" class="button is-success mt-2">Guardar</button>
-                <a href="/juegos.html" class="button is-primary mt-2">Volver</a>
+                <a href="/principal.html" class="button is-primary mt-2">Volver</a>
             </div>
         </div>
-
-    <button type="button" onclick="conectar()">ENVIAR</button>
 </body>
 </html>

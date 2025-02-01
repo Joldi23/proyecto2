@@ -134,3 +134,4 @@ def update_photo():
     except Exception as e:
         logging.error(f"Error al procesar la actualización: {e}")
         return jsonify({"status": "ERROR", "message": str(e)}), 500
+

@@ -27,7 +27,7 @@
                 .then(response => response.json())
                 .then(result => {
                     if (result.status === "OK") {
-                        location.href = "juegos.html";
+                        location.href = "principal.html";
                     } else {
                         document.getElementsByClassName("error")[0].textContent = "Usuario/clave errónea";
                         document.getElementsByClassName("error")[0].style.display = "block";
@@ -56,7 +56,6 @@
             <button type="button" onclick="conectar()">ENVIAR</button>
             <button type="button" onclick="location.href='registro.html'">REGISTRARSE</button>
         </form>
-        <p>HOLA HAS HECHO UN CAMBIO
     </div>
 </body>
 </html>

@@ -62,9 +62,8 @@
                             preview.src = `/${data.ruta}?t=${timestamp}`; // Actualizar la ruta con timestamp
                             preview.style.display = "block"; // Mostrar la imagen
 
-                            // Redirigir a /juegos.html después de que todo haya ido bien
                             setTimeout(() => {
-                                window.location.href = "/juegos.html"; // Redirige después de un pequeño retraso
+                                window.location.href = "/principal.html"; // Redirige después de un pequeño retraso
                             }, 1000); // Retraso de 1 segundo para permitir que el usuario vea el mensaje
                         } else {
                             alert("Error al subir el archivo: " + data.message);

@@ -29,7 +29,7 @@ services:
     container_name: apache
     build: ./apache
     ports:
-      - 7777:80
+      - 9095:80
     volumes:
       - apache_fotos:/var/www/html/fotos 
   python:
