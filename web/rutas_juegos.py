@@ -23,7 +23,7 @@ def bienvenido():
 
             conexion.close()
 
-            # Construir la respuesta con los datos de las clases
+
             clases_data = [
                 {
                     "id_clase": clase[0],
@@ -35,11 +35,19 @@ def bienvenido():
                 }
                 for clase in clases
             ]
+            
+            dni = session["dni"]
+            conexion = obtener_conexion()
+            cursor = conexion.cursor()
+            cursor.execute("SELECT foto FROM usuarios WHERE dni=%s", (dni,))
+            resultado = cursor.fetchone()
+            conexion.close()
+            foto = resultado[0] if resultado and resultado[0] else ""
 
             return jsonify({
                 "status": "OK",
                 "usuario": session["usuario"],
-                "foto": session["foto"],
+                "foto": foto,
                 "es_trabajador" :session["es_trabajador"],
                 "clases": clases_data
             }), 200
@@ -159,34 +167,34 @@ def actualizar_clase_por_id(id_clase):
 @app.route("/actualizarD/<dni>", methods=["PUT"])
 def actualizarDA(dni):
     content_type = request.headers.get("Content-Type")
-    if content_type == "application/json":
-        try:
-            clase_json = request.json
+    if content_type != "application/json":
+        return json.dumps({"status": "Bad request", "message": "Content-Type debe ser application/json"}), 400
 
-            # Validar campos obligatorios
-            required_fields = ["nombre", "apellido1", "apellido2", "email", "telefono"]
-            for field in required_fields:
-                if field not in clase_json:
-                    return json.dumps({"status": "Bad request", "message": f"Falta el campo: {field}"}), 400
+    try:
+        clase_json = request.get_json()
+        if not clase_json:
+            return json.dumps({"status": "Bad request", "message": "Cuerpo JSON vacío o inválido"}), 400
 
-            ret, code = controlador_usuarios.actualizarD(
-                nombre=clase_json["nombre"],
-                apellido1=clase_json["apellido1"],
-                apellido2=clase_json["apellido2"],
-                email=clase_json["email"],
-                telefono=clase_json["telefono"],
-                dni=dni,
-                num_tarjeta=clase_json.get("num_tarjeta")
-            )
-        except Exception as e:
-        # Imprimir el error completo en el log o la consola
-            app.logger.error(f"Error al registrar el usuario: {e}", exc_info=True)  # Esto mostrará la traza completa del error
-            ret = {"status": "ERROR", "mensaje": str(e)}
-            code = 500
+        # Validar campos obligatorios
+        required_fields = ["nombre", "apellido1", "apellido2", "email", "telefono"]
+        for field in required_fields:
+            if field not in clase_json:
+                return json.dumps({"status": "Bad request", "message": f"Falta el campo: {field}"}), 400
 
-    else:
-        ret = {"status": "Bad request", "message": "Content-Type debe ser application/json"}
-        code = 400
+        ret, code = controlador_usuarios.actualizarD(
+            nombre=clase_json["nombre"],
+            apellido1=clase_json["apellido1"],
+            apellido2=clase_json["apellido2"],
+            email=clase_json["email"],
+            telefono=clase_json["telefono"],
+            dni=dni,
+            num_tarjeta=clase_json.get("num_tarjeta")
+        )
+
+    except Exception as e:
+        app.logger.error(f"Error al actualizar usuario: {e}", exc_info=True)
+        ret = {"status": "ERROR", "message": str(e)}
+        code = 500
 
     return json.dumps(ret), code
 

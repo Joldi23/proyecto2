@@ -23,7 +23,7 @@ def login():
             
             with conexion.cursor() as cursor:
                 print(f"🔍 Buscando usuario en la base de datos: {username}", file=sys.stdout)
-                cursor.execute("SELECT password, email, dni, foto, es_trabajador FROM usuarios WHERE email = %s", (username,))
+                cursor.execute("SELECT password, email, dni, es_trabajador FROM usuarios WHERE email = %s", (username,))
                 usuario = cursor.fetchone()
                 print(f"✅ Resultado de la consulta SQL: {usuario}", file=sys.stdout)
 
@@ -48,8 +48,7 @@ def login():
                         print("✅ Contraseña correcta.", file=sys.stdout)
                         session["usuario"] = username
                         session["dni"] = usuario[2]
-                        session["foto"] = usuario[3]
-                        session["es_trabajador"] = usuario[4]
+                        session["es_trabajador"] = usuario[3]
                         ret = {"status": "OK", "mensaje": "Inicio de sesión exitoso"}
                         code = 200
                     else:

@@ -175,31 +175,30 @@ def actualizarD(nombre, apellido1, apellido2, email, telefono, dni, num_tarjeta=
     try:
         conexion = obtener_conexion()
         with conexion.cursor() as cursor:
-            # Actualizar los datos del usuario
+            # Guardamos el número de filas afectadas en la primera actualización
             cursor.execute("""
                 UPDATE usuarios 
-                SET nombre = %s, 
-                    apellido1 = %s, 
-                    apellido2 = %s, 
-                    email = %s, 
-                    telefono = %s
+                SET nombre = %s, apellido1 = %s, apellido2 = %s, email = %s, telefono = %s
                 WHERE dni = %s
             """, (nombre, apellido1, apellido2, email, telefono, dni))
+            filas_afectadas = cursor.rowcount  # Guardamos cuántas filas se actualizaron
 
-            # Si se proporciona un num_tarjeta válido, actualizarlo en la base de datos
+            # Si se proporciona un num_tarjeta válido, actualizamos la tarjeta
             if num_tarjeta not in (None, ""):
                 cursor.execute("""
                     UPDATE usuarios 
-                    SET num_tarjeta = %s
+                    SET num_tarjeta = %s,
+                    membresia = TRUE
                     WHERE dni = %s
                 """, (num_tarjeta, dni))
+                filas_afectadas += cursor.rowcount  # Sumamos los cambios de la segunda consulta
 
-            # Confirmar los cambios si se realizaron actualizaciones
-            if cursor.rowcount > 0:
+            # Confirmamos los cambios si al menos una consulta afectó registros
+            if filas_afectadas > 0:
                 conexion.commit()
                 ret = {"status": "OK"}
             else:
-                ret = {"status": "Failure", "message": "No se encontró el registro o no se realizaron cambios"}
+                ret = {"status": "Failure", "message": "No se encontró el registro o no hubo cambios"}
 
     except Exception as e:
         ret = {"status": "Failure", "message": "Error interno del servidor"}

@@ -7,29 +7,27 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Obtener el DNI de la URL
+            
             const urlParams = new URLSearchParams(window.location.search);
             const dni = urlParams.get('dni');
 
             if (!dni) {
                 alert("DNI no encontrado en la URL. Redirigiendo...");
-                window.location.href = "/index.html"; // Redirigir si no hay DNI en la URL
+                window.location.href = "/index.html"; 
             }
 
-            // Cargar foto desde la sesión si existe
             fetch(`/api/getUserPhoto?dni=${dni}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === "OK" && data.foto) {
                         const preview = document.getElementById("preview");
-                        const timestamp = new Date().getTime(); // Timestamp único
-                        preview.src = `/${data.foto}?t=${timestamp}`; // Agregar timestamp a la URL
-                        preview.style.display = "block"; // Mostrar la imagen
+                        const timestamp = new Date().getTime(); 
+                        preview.src = `/${data.foto}?t=${timestamp}`; 
+                        preview.style.display = "block"; 
                     }
                 })
                 .catch(error => console.error("Error al obtener la foto:", error));
 
-            // Configurar el formulario de subida
             const form = document.getElementById("uploadForm");
             form.addEventListener("submit", function (e) {
                 e.preventDefault(); // Evitar el comportamiento predeterminado del formulario
@@ -47,7 +45,6 @@
                 formData.append("fichero", file);
                 formData.append("dni", dni);
 
-                // Enviar la solicitud de subida al servidor usando PUT
                 fetch("/api/update", {
                     method: "PUT",
                     body: formData
@@ -56,15 +53,15 @@
                     .then(data => {
                         if (data.status === "OK") {
                             alert("Archivo subido correctamente. Ruta: " + data.ruta);
-                            // Actualizar la vista con la nueva foto
+                   
                             const preview = document.getElementById("preview");
-                            const timestamp = new Date().getTime(); // Timestamp único
-                            preview.src = `/${data.ruta}?t=${timestamp}`; // Actualizar la ruta con timestamp
-                            preview.style.display = "block"; // Mostrar la imagen
+                            const timestamp = new Date().getTime();
+                            preview.src = `/${data.ruta}?t=${timestamp}`; 
+                            preview.style.display = "block";
 
                             setTimeout(() => {
-                                window.location.href = "/principal.html"; // Redirige después de un pequeño retraso
-                            }, 1000); // Retraso de 1 segundo para permitir que el usuario vea el mensaje
+                                window.location.href = "/principal.html"; 
+                            }, 1000); 
                         } else {
                             alert("Error al subir el archivo: " + data.message);
                         }

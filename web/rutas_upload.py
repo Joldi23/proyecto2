@@ -6,9 +6,8 @@ import os
 import logging
 from werkzeug.utils import secure_filename
 
-# Configuración para subir archivos
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-UPLOAD_FOLDER = '/var/www/html/fotos'  # Ruta específica para fotos
+UPLOAD_FOLDER = '/var/www/html/fotos' 
 
 # Configuración de logging
 logging.basicConfig(level=logging.DEBUG)
