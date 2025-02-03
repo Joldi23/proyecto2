@@ -1,4 +1,4 @@
-# Gestiión de gimnasio
+# Gestión de gimnasio
 
 ## Descripción
 Hemos creado una aplicación sobre la gestión de un gimnasio. El funcionamiento principal es que hay dos tipos de usuarios: **clientes** y **trabajadores**.
