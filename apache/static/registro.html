@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APP PEPS</title>
-    <link rel="stylesheet" href="styles2.css"> <!-- Vincula el archivo CSS -->
+    <link rel="stylesheet" href="styles2.css"> 
     <script>
         var myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
@@ -13,10 +13,10 @@
         function conectar() {
             document.getElementsByClassName("error")[0].style.display = "none";
 
-            // Prepara el objeto con todos los campos del formulario
+            
             var raw = JSON.stringify({
                 "dni": document.getElementById("dni").value,
-                "nombre": document.getElementById("nombre").value,  // Incluido 'nombre'
+                "nombre": document.getElementById("nombre").value,  
                 "apellido1": document.getElementById("apellido1").value,
                 "apellido2": document.getElementById("apellido2").value,
                 "email": document.getElementById("email").value,
@@ -26,7 +26,7 @@
                 "num_tarjeta": document.getElementById("num_tarjeta").value
             });
 
-            console.log(raw); // Verifica los datos antes de enviarlos
+            console.log(raw); 
 
             var requestOptions = {
                 method: 'POST',
@@ -34,7 +34,7 @@
                 body: raw
             };
 
-            // Realiza la solicitud a la API
+            
             fetch("/api/registro", requestOptions)
                 .then(response => response.json())
                 .then(result => {

@@ -11,16 +11,16 @@
         myHeaders.append("Content-Type", "application/json");
 
         document.addEventListener("DOMContentLoaded", function () {
-            // Realizar la solicitud GET para obtener el DNI
+            
             fetch("/api/obtener_dni", { method: "GET" })
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === "OK") {
-                        // Rellenar el campo oculto con el DNI obtenido
+                        
                         document.getElementById("dni").value = data.dni;
                     } else {
                         alert("Error al obtener el DNI.");
-                        location.href = "/index.html"; // Redirigir si no hay sesión activa
+                        location.href = "/index.html"; 
                     }
                 })
                 .catch(error => {
@@ -31,31 +31,30 @@
         function guardar() {
             let nombre = document.getElementById("nombre").value;
             let capacidad = document.getElementById("capacidad").value;
-            let horario = document.getElementById("horario").value;  // Valor en formato 'YYYY-MM-DD'
+            let horario = document.getElementById("horario").value;  
             let duracion_minutos = document.getElementById("duracion_minutos").value;
-            let dni = document.getElementById("dni").value; // Obtener el DNI del campo oculto
-
-            // Validar y convertir los datos antes de enviarlos
+            let dni = document.getElementById("dni").value; 
+            
             if (isNaN(capacidad) || isNaN(duracion_minutos)) {
                  alert("Capacidad y duración deben ser números.");
             return;
              }
 
-    // Asegurarse de que el campo de horario esté completo (añadir una hora por defecto si es necesario)
+    
              if (!horario) {
                alert("El campo de horario no puede estar vacío.");
             return;
            }
 
-    // Crear una nueva fecha con hora por defecto
-            let horarioDate = new Date(horario + "T00:00:00"); // Asume que la hora es a las 00:00:00 si no se proporciona
+    
+            let horarioDate = new Date(horario + "T00:00:00"); 
             let formattedHorario = horarioDate.toISOString().slice(0, 19).replace("T", " ");
 
             let datos = JSON.stringify({
                 "nombre": nombre,
-                "capacidad": parseInt(capacidad), // Convertir a número entero
-                "horario": formattedHorario,      // Formato correcto 'YYYY-MM-DD HH:MM:SS'
-                "duracion_minutos": parseInt(duracion_minutos), // Convertir a número entero
+                "capacidad": parseInt(capacidad), 
+                "horario": formattedHorario,      
+                "duracion_minutos": parseInt(duracion_minutos),
                 "dni": dni
           });
 
@@ -107,7 +106,7 @@
         <div class="columns">
             <div class="column">
                 <h3 class="is-size-3">Agregar clase</h3>
-                <!-- Campo oculto para el DNI -->
+                
                 <input type="hidden" id="dni" name="dni">
                 
                 <label for="nombre">Nombre:</label>

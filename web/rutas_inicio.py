@@ -35,7 +35,7 @@ def login():
                 ret = {"status": "ERROR", "mensaje": "Usuario no encontrado"}
                 code = 401
             else:
-                stored_hash = usuario[0]  # Contraseña almacenada en la base de datos
+                stored_hash = usuario[0]  
                 
                 if stored_hash is None:
                     print("⚠️ El usuario no tiene una contraseña registrada.", file=sys.stdout)
@@ -57,7 +57,7 @@ def login():
                         code = 401
         except Exception as e:
             print(f"🚨 Error en el login: {e}", file=sys.stdout)
-            print(traceback.format_exc(), file=sys.stdout)  # Mostrar la traza completa del error
+            print(traceback.format_exc(), file=sys.stdout)  
             ret = {"status": "ERROR", "mensaje": "Error en el servidor"}
             code = 500
 
@@ -82,7 +82,7 @@ def registro():
         fecha_nacimiento = datos_json.get('fecha_nacimiento')
         num_tarjeta = datos_json.get('num_tarjeta')
 
-        # Si num_tarjeta es vacío, lo convertimos en None
+        
         num_tarjeta = None if num_tarjeta in [None, "", " "] else str(num_tarjeta)
         membresia = True if num_tarjeta else False
 
@@ -141,7 +141,7 @@ def obtener_membresia():
             # Conexión a la base de datos
             conexion = obtener_conexion()
             with conexion.cursor() as cursor:
-                # Consulta para obtener los datos del usuario
+                
                 query = """
                     SELECT nombre, apellido1, apellido2, email, telefono, fecha_nacimiento, membresia, foto
                     FROM usuarios
@@ -153,10 +153,10 @@ def obtener_membresia():
             conexion.close()
 
             if usuario:
-                # Descomponer los datos
+                
                 nombre, apellido1, apellido2, email, telefono, fecha_nacimiento, membresia, foto = usuario
 
-                # Respuesta con los datos
+               
                 return jsonify({
                     "status": "OK",
                     "nombre": nombre,

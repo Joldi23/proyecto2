@@ -30,9 +30,9 @@
 
             const form = document.getElementById("uploadForm");
             form.addEventListener("submit", function (e) {
-                e.preventDefault(); // Evitar el comportamiento predeterminado del formulario
+                e.preventDefault(); 
 
-                // Crear un objeto FormData para enviar el archivo y el DNI
+                
                 const formData = new FormData();
                 const fileInput = document.getElementById("fileInput");
                 const file = fileInput.files[0];

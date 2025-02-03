@@ -33,26 +33,26 @@
                     `;
 
 
-                        // Obtener el DNI de la API
+                        
                         fetch("/api/obtener_dni", { method: "GET" })
                             .then(response => response.json())
                             .then(dniData => {
                                 if (dniData.status === "OK" && dniData.dni) {
-                                    // Modificar el enlace con el DNI
+                                    
                                     const enlaceModificar = document.getElementById("modificar-enlace");
-                                    enlaceModificar.href = `/mod.html?dni=${dniData.dni}`; // Añadir el DNI a la URL
+                                    enlaceModificar.href = `/mod.html?dni=${dniData.dni}`; 
 
-                                    // Crear el nuevo enlace para subir.html
+                                    
                                     const enlaceSubir = document.createElement("a");
                                     enlaceSubir.className = "navbar-item";
                                     enlaceSubir.href = `/subida.html?dni=${dniData.dni}`;
                                     enlaceSubir.textContent = "Cambiar foto";
                                     
-                                    // Añadir el nuevo enlace al DOM
+                                    
                                     infoContainer.appendChild(enlaceSubir);
                                 } else {
                                     alert("Error al obtener el DNI.");
-                                    location.href = "/index.html"; // Redirigir si no hay sesión activa
+                                    location.href = "/index.html"; 
                                 }
                             })
                             .catch(error => {
@@ -96,7 +96,7 @@
             </div>
             <div class="navbar-end">
                 <div class="navbar-item" id="foto-container">
-                    <!-- Aquí se insertará la imagen -->
+                    
                 </div>
             </div>
         </div>
@@ -105,7 +105,7 @@
     <div id="info-container">
         Cargando tu información...
     </div>
-    <!-- Enlace para modificar datos personales -->
+    
     <a class="navbar-item" href="#" id="modificar-enlace">Modificar Datos Personales</a>
 </body>
 </html>

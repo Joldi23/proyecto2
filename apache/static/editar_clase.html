@@ -80,29 +80,29 @@
             const horario = document.getElementById("horario").value;
             const duracion_minutos = document.getElementById("duracion_minutos").value;
 
-            // Formatear el horario en el formato correcto para el backend
+            
             const horarioFormateado = new Date(horario).toISOString().replace("T", " ").slice(0, 19);
 
-            // Crear el objeto con los datos a enviar
+            
             const datos = JSON.stringify({
-                id_clase,        // ID de la clase
-                nombre,          // Nombre de la clase
-                id_entrenador,   // ID del entrenador (puede cambiar)
-                capacidad,       // Capacidad de la clase
-                horario: horarioFormateado, // Horario formateado
-                duracion_minutos // Duración de la clase en minutos
+                id_clase,        
+                nombre,          
+                id_entrenador,   
+                capacidad,       
+                horario: horarioFormateado, 
+                duracion_minutos 
     });
 
-    // Configuración de la solicitud
+    
     const requestOptions = {
-        method: 'PUT', // Actualización (PUT)
+        method: 'PUT', 
         headers: {
-            'Content-Type': 'application/json', // Tipo de contenido JSON
+            'Content-Type': 'application/json', 
         },
-        body: datos // Cuerpo de la solicitud
+        body: datos 
     };
 
-    // Realizar la solicitud al endpoint de actualización
+    
     fetch(`/api/actualizar/${id_clase}`, requestOptions)
         .then(response => response.json())
         .then(result => {

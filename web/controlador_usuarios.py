@@ -29,14 +29,14 @@ def obtener_dni_por_usuario(email):
     try:
         conexion = obtener_conexion()
         with conexion.cursor() as cursor:
-            # Consulta para obtener el DNI asociado al usuario
+            
             cursor.execute("SELECT dni FROM usuarios WHERE email = %s", (email,))
             resultado = cursor.fetchone()
         
         conexion.close()
         
         if resultado:
-            return {"status": "OK", "dni": resultado[0]}  # Devuelve el DNI si existe
+            return {"status": "OK", "dni": resultado[0]}  
         else:
             return {"status": "ERROR", "mensaje": "Usuario no encontrado"}
     
@@ -52,9 +52,9 @@ def convertir_clase_json(clase):
     d['id_entrenador'] = clase[2]
     d['capacidad'] = clase[3]
     
-    # Formatear el horario si no es None
+    
     if clase[4] is not None:
-        d['horario'] = clase[4].strftime('%Y-%m-%dT%H:%M')  # Formato compatible con datetime-local
+        d['horario'] = clase[4].strftime('%Y-%m-%dT%H:%M')  
     else:
         d['horario'] = None
     
@@ -74,7 +74,7 @@ def obtener_clase_por_id(id_clase):
                 clasejson = convertir_clase_json(clase)
         conexion.close()
         code = 200
-    except Exception as e:  # Manejo específico de excepciones
+    except Exception as e:  
         print(f"Excepción al recuperar un usuario: {e}", file=sys.stdout)
         code = 500
     return clasejson,code
@@ -105,7 +105,7 @@ def actualizar_clase(id_clase, id_entrenador, nombre, capacidad, horario, duraci
     try:
         conexion = obtener_conexion()
         with conexion.cursor() as cursor:
-            # Actualizar los datos en la tabla clases, ahora incluyendo el id_entrenador
+            
             cursor.execute("""
                 UPDATE clases 
                 SET id_entrenador = %s, 
@@ -116,7 +116,7 @@ def actualizar_clase(id_clase, id_entrenador, nombre, capacidad, horario, duraci
                 WHERE id_clase = %s
             """, (id_entrenador, nombre, capacidad, horario, duracion_minutos, id_clase))
             
-            # Comprobar si se actualizó al menos una fila
+            
             if cursor.rowcount == 1:
                 ret = {"status": "OK"}
             else:
@@ -145,15 +145,15 @@ def obtener_datos(dni):
             """, (dni,))
             datos = cursor.fetchone()
 
-            if datos:  # Verifica si `datos` no es None ni vacío
+            if datos:  
                 datos_json = datosusu_json(datos)  
 
         
         conexion.close()
-        code = 200  # Código de éxito
-    except Exception as e:  # Manejo de errores
+        code = 200  
+    except Exception as e:  
         print(f"Excepción al recuperar datos: {e}", file=sys.stdout)
-        code = 500  # Código de error
+        code = 500  
 
     return datos_json, code
 
@@ -164,7 +164,7 @@ def datosusu_json(datos):
         'apellido2': datos[2],
         'email': datos[3],
         'telefono': datos[4],
-        'num_tarjeta': datos[5] if len(datos) > 5 else ""  # Si existe, se envía; si no, se envía vacío
+        'num_tarjeta': datos[5] if len(datos) > 5 else ""  
     }
     return d
 
@@ -175,15 +175,15 @@ def actualizarD(nombre, apellido1, apellido2, email, telefono, dni, num_tarjeta=
     try:
         conexion = obtener_conexion()
         with conexion.cursor() as cursor:
-            # Guardamos el número de filas afectadas en la primera actualización
+            
             cursor.execute("""
                 UPDATE usuarios 
                 SET nombre = %s, apellido1 = %s, apellido2 = %s, email = %s, telefono = %s
                 WHERE dni = %s
             """, (nombre, apellido1, apellido2, email, telefono, dni))
-            filas_afectadas = cursor.rowcount  # Guardamos cuántas filas se actualizaron
+            filas_afectadas = cursor.rowcount  
 
-            # Si se proporciona un num_tarjeta válido, actualizamos la tarjeta
+          
             if num_tarjeta not in (None, ""):
                 cursor.execute("""
                     UPDATE usuarios 
@@ -191,9 +191,9 @@ def actualizarD(nombre, apellido1, apellido2, email, telefono, dni, num_tarjeta=
                     membresia = TRUE
                     WHERE dni = %s
                 """, (num_tarjeta, dni))
-                filas_afectadas += cursor.rowcount  # Sumamos los cambios de la segunda consulta
+                filas_afectadas += cursor.rowcount  
 
-            # Confirmamos los cambios si al menos una consulta afectó registros
+            
             if filas_afectadas > 0:
                 conexion.commit()
                 ret = {"status": "OK"}
