@@ -2,123 +2,111 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Datos Personales</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
     <script>
-        const queryString = window.location.search; 
-        const urlParams = new URLSearchParams(queryString); 
-        const id_clase = urlParams.get('id_clase');
+        var myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
 
-        if (!id_clase) {
-            console.error("El parámetro 'id_clase' no está presente en la URL.");
-            alert("No se encontró el parámetro id_clase en la URL.");
-            location.href = "/principal.html"; 
-        } else {
-            console.log("ID Clase obtenido:", id_clase);
+        if (sessionStorage.getItem("csrf_token")) {
+            myHeaders.append("X-CSRFToken", sessionStorage.getItem("csrf_token"));
         }
 
+        let id_clase = null;
+
         window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            id_clase = urlParams.get('id_clase');
+
+            if (!id_clase) {
+                location.href = "/principal.html";
+                return;
+            }
+
             obtenerDatosClase(id_clase);
         };
 
         function obtenerDatosClase(id_clase) {
-            fetch(`/api/clase/${id_clase}`, { method: 'GET' })
+            fetch(`/api/clase/${id_clase}`, { method: 'GET', headers: myHeaders })
                 .then(response => response.json())
-                .then(result => pintarClase(result))
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert("Ha habido un error al recuperar los datos de la clase");
+                .then(result => {
+                    if (result) {
+                        pintarClase(result);
+                    }
+                })
+                .catch(() => {
                     location.href = "/principal.html";
                 });
         }
 
-        function eliminar(id){
-            var requestOptions = {
-                method: 'DELETE'
-            };
-
-            fetch(`/api/eliminar/${id_clase}`, requestOptions)
-                .then(response => response.json())
-                .then(result => {
-                    if (result.status == "OK"){
-                        alert("Clase eliminado")
-                        location.href = "/principal.html";
-                    } else {
-                        alert("La clase no ha podido ser eliminada")
-                    }
-                })
-                .catch(error => {
-                    console.log('error', error);
-                    alert("Se ha producido un error y la clase no ha podido ser eliminada")
-                });
-        }
-
         function pintarClase(clase) {
-            console.log(clase);
-
             document.getElementById("id_clase").value = clase.id_clase || '';
-            document.getElementById("id_entrenador").value = clase.id_entrenador || '';
             document.getElementById("nombre").value = clase.nombre || '';
             document.getElementById("capacidad").value = clase.capacidad || '';
             document.getElementById("duracion_minutos").value = clase.duracion_minutos || '';
-    
-            
+
             if (clase.horario) {
                 const horario = new Date(clase.horario);
-                const horarioFormateado = horario.toISOString().slice(0, 16); 
-                document.getElementById("horario").value = horarioFormateado;
+                if (!isNaN(horario.getTime())) {
+                    document.getElementById("horario").value = horario.toISOString().slice(0, 16);
+                }
             }
         }
 
         function guardar() {
             const id_clase = document.getElementById("id_clase").value;
             const nombre = document.getElementById("nombre").value;
-            const id_entrenador = document.getElementById("id_entrenador").value;
             const capacidad = document.getElementById("capacidad").value;
-            const horario = document.getElementById("horario").value;
+            const horarioInput = document.getElementById("horario").value;
             const duracion_minutos = document.getElementById("duracion_minutos").value;
 
-            
-            const horarioFormateado = new Date(horario).toISOString().replace("T", " ").slice(0, 19);
-
-            
-            const datos = JSON.stringify({
-                id_clase,        
-                nombre,          
-                id_entrenador,   
-                capacidad,       
-                horario: horarioFormateado, 
-                duracion_minutos 
-    });
-
-    
-    const requestOptions = {
-        method: 'PUT', 
-        headers: {
-            'Content-Type': 'application/json', 
-        },
-        body: datos 
-    };
-
-    
-    fetch(`/api/actualizar/${id_clase}`, requestOptions)
-        .then(response => response.json())
-        .then(result => {
-            if (result.status === "OK") {
-                alert("Clase actualizado correctamente");
-                location.href = "/principal.html"; 
-            } else {
-                alert(result.message || "No se pudo actualizar la clase");
+            let horarioFormateado = "";
+            if (horarioInput) {
+                const fecha = new Date(horarioInput);
+                if (!isNaN(fecha.getTime())) {
+                    horarioFormateado = fecha.toISOString().replace("T", " ").slice(0, 19);
+                } else {
+                    return;
+                }
             }
-        })
-        .catch(error => {
-            console.error("Error al actualizar la clase:", error);
-            alert("Error al actualizar la clase. Inténtalo de nuevo.");
-        });
-}
 
+            const datos = JSON.stringify({
+                id_clase,
+                nombre,
+                capacidad,
+                horario: horarioFormateado,
+                duracion_minutos
+            });
+
+            fetch(`/api/actualizarclase`, {
+                method: 'PUT',
+                headers: myHeaders,
+                body: datos
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === "OK") {
+                    location.href = "/principal.html";
+                }
+            })
+            .catch(() => {});
+        }
+
+        function eliminar() {
+            if (!id_clase) {
+                return;
+            }
+
+            fetch(`/api/eliminar/${id_clase}`, { method: 'DELETE', headers: myHeaders })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === "OK") {
+                        location.href = "/principal.html";
+                    }
+                })
+                .catch(() => {});
+        }
     </script>
 </head>
 <body>
@@ -145,9 +133,6 @@
                 <label for="id_clase">Clase:</label>
                 <input type="text" class="input" name="id_clase" id="id_clase" readonly>
 
-                <label for="id_entrenador">Entrenador:</label>
-                <input type="text" class="input" name="id_entrenador" id="id_entrenador">
-
                 <label for="nombre">Nombre:</label>
                 <input type="text" class="input" name="nombre" id="nombre">
 
@@ -161,7 +146,7 @@
                 <input type="text" class="input" name="duracion_minutos" id="duracion_minutos">
 
                 <button type="button" onclick="guardar()" class="button is-success mt-2">Guardar</button>
-                <button type="button" onclick="eliminar()" class="button is-success mt-2">Eliminar</button>
+                <button type="button" onclick="eliminar()" class="button is-danger mt-2">Eliminar</button>
                 <a href="/principal.html" class="button is-primary mt-2">Volver</a>
             </div>
         </div>

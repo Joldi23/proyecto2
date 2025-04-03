@@ -7,7 +7,17 @@
     <title>Área Personal</title>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            fetch("/api/membresia", { method: "GET" })
+            var csrfToken = sessionStorage.getItem("csrf_token");
+            var myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+            if (csrfToken) {
+                myHeaders.append("X-CSRFToken", csrfToken);
+            }
+
+            fetch("/api/membresia", { 
+                method: "GET", 
+                headers: myHeaders 
+            })
                 .then(response => response.json())
                 .then(data => {
                     const infoContainer = document.getElementById("info-container");
@@ -23,58 +33,33 @@
                             <p><strong>Teléfono:</strong> ${telefono}</p>
                             <p><strong>Fecha de nacimiento:</strong> ${fecha_nacimiento}</p>
                             <p><strong>Membresía:</strong> ${membresia ? membresia : "No tienes membresía activa"}</p>
-                           
                         `;
                         fotoContainer.innerHTML = `
-                        
-                        <figure class="image is-48x48">
-                            <img src="/${foto}" alt="Foto de perfil" style="border-radius: 50%;">
-                        </figure>
-                    `;
-
-
-                        
-                        fetch("/api/obtener_dni", { method: "GET" })
-                            .then(response => response.json())
-                            .then(dniData => {
-                                if (dniData.status === "OK" && dniData.dni) {
-                                    
-                                    const enlaceModificar = document.getElementById("modificar-enlace");
-                                    enlaceModificar.href = `/mod.html?dni=${dniData.dni}`; 
-
-                                    
-                                    const enlaceSubir = document.createElement("a");
-                                    enlaceSubir.className = "navbar-item";
-                                    enlaceSubir.href = `/subida.html?dni=${dniData.dni}`;
-                                    enlaceSubir.textContent = "Cambiar foto";
-                                    
-                                    
-                                    infoContainer.appendChild(enlaceSubir);
-                                } else {
-                                    alert("Error al obtener el DNI.");
-                                    location.href = "/index.html"; 
-                                }
-                            })
-                            .catch(error => {
-                                console.error("Error al obtener el DNI:", error);
-                            });
-
+                            <figure class="image is-48x48">
+                                <img src="/${foto}" alt="Foto de perfil" style="border-radius: 50%;">
+                            </figure>
+                        `;
                     } else {
                         infoContainer.innerHTML = "No se pudo obtener tu información. Por favor, inicia sesión nuevamente.";
                     }
                 })
                 .catch(error => {
                     console.error("Error al obtener los datos:", error);
-                    const infoContainer = document.getElementById("info-container");
-                    infoContainer.innerHTML = "Ocurrió un error al cargar tu información.";
+                    document.getElementById("info-container").innerHTML = "Ocurrió un error al cargar tu información.";
                 });
         });
 
         function cerrarSesion() {
-            fetch("/api/logout", { method: "GET" })
+            fetch("/api/logout", { 
+                method: "GET",
+                headers: new Headers({
+                    "X-CSRFToken": sessionStorage.getItem("csrf_token") 
+                })
+            })
                 .then(response => response.json())
                 .then(result => {
                     if (result.status === "OK") {
+                        sessionStorage.removeItem("csrf_token");
                         location.href = "/index.html";
                     } else {
                         alert("No se pudo cerrar sesión.");
@@ -95,17 +80,12 @@
                 <a class="navbar-item" href="javascript:cerrarSesion()">Cerrar sesión</a>
             </div>
             <div class="navbar-end">
-                <div class="navbar-item" id="foto-container">
-                    
-                </div>
+                <div class="navbar-item" id="foto-container"></div>
             </div>
         </div>
     </nav>
     <h1 class="title">Área Personal</h1>
-    <div id="info-container">
-        Cargando tu información...
-    </div>
-    
-    <a class="navbar-item" href="#" id="modificar-enlace">Modificar Datos Personales</a>
+    <div id="info-container">Cargando tu información...</div>
+    <a class="navbar-item" href="/mod.html" id="modificar-enlace">Modificar Datos Personales</a>
 </body>
 </html>

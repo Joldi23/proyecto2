@@ -5,7 +5,8 @@ WORKDIR /app
 
 ADD ./web .
 
-RUN pip install Flask==1.1.4 markupsafe==2.0.1 python-dotenv bcrypt PyMySQL
+
+RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 8080
 

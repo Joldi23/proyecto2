@@ -1,4 +1,7 @@
 CREATE DATABASE IF NOT EXISTS PEPS;
+CREATE USER 'user'@'%' IDENTIFIED BY 'userpw';
+GRANT ALL PRIVILEGES ON PEPS.* TO 'user'@'%';
+FLUSH PRIVILEGES;
 USE PEPS;
 
 -- Tabla Usuarios
@@ -12,11 +15,15 @@ CREATE TABLE usuarios (
     fecha_nacimiento DATE,
     fecha_registro DATE DEFAULT CURRENT_DATE,
     membresia BOOLEAN DEFAULT FALSE, 
-    es_trabajador BOOLEAN DEFAULT FALSE, 
-    descuento_trabajador DECIMAL(5, 2) DEFAULT 0.00,
+    perfil BOOLEAN DEFAULT FALSE,
     password VARCHAR(255) NOT NULL,
     foto VARCHAR(255) NULL,
-    num_tarjeta VARCHAR(100)
+    num_tarjeta VARCHAR(100),
+    fechaUltimoAcceso DATE,
+    fechaBloqueo DATE,
+    numeroAccesosErroneo INTEGER,
+    debeCambiarClave BOOLEAN,
+    estado VARCHAR (20) DEFAULT 'activo'
 );
 
 -- Tabla Clases
@@ -27,7 +34,7 @@ CREATE TABLE clases (
     capacidad INT NOT NULL, 
     horario DATETIME NOT NULL, 
     duracion_minutos INT NOT NULL, 
-    FOREIGN KEY (id_entrenador) REFERENCES usuarios(dni) -- Corregí la referencia a "usuarios"
+    FOREIGN KEY (id_entrenador) REFERENCES usuarios(dni) 
 );
 
 -- Tabla Pagos
@@ -36,7 +43,7 @@ CREATE TABLE pagos (
     id_usuario VARCHAR(100) NOT NULL,
     monto DECIMAL(10, 2) NOT NULL, 
     fecha_pago DATE DEFAULT CURRENT_DATE, 
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(dni) -- Corregí la referencia a "usuarios"
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(dni) 
 );
 
 
@@ -78,7 +85,7 @@ DELIMITER ;
 
 --INSERT DE UN USUARIO QUE ES TRABAJADOR
 
-INSERT INTO usuarios (dni, nombre, apellido1, apellido2, email, telefono, fecha_nacimiento, password, es_trabajador) 
-VALUES ('12345678A', 'Juan', 'Pérez', 'Gómez', 'trabajador1@gmail.com', '600123456', '1990-05-15', '$2b$12$W75ocsoaN8eC62n4rljG4e2L9qwqYhmcxuJbGzvfZ5EfW8CcNISLm', TRUE);
+INSERT INTO usuarios (dni, nombre, apellido1, apellido2, email, telefono, fecha_nacimiento, password, es_trabajador,estado) 
+VALUES ('12345678A', 'Juan', 'Pérez', 'Gómez', 'trabajador1@gmail.com', '600123456', '1990-05-15', '$2b$12$W75ocsoaN8eC62n4rljG4e2L9qwqYhmcxuJbGzvfZ5EfW8CcNISLm', TRUE,'activo');
 
 --la contraseña del usuario es '12345'

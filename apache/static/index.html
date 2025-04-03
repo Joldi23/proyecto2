@@ -10,11 +10,11 @@
         var myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
 
-        function conectar() {
-            document.getElementsByClassName("error")[0].style.display = "none";
+        function conectar(){
+            document.getElementsByClassName("error")[0].style.display="none";
             var raw = JSON.stringify({
                 "username": document.getElementById("username").value,
-                "password": document.getElementById("passwordd").value
+                "password": document.getElementById("password").value
             });
 
             var requestOptions = {
@@ -26,18 +26,15 @@
             fetch("/api/login", requestOptions)
                 .then(response => response.json())
                 .then(result => {
-                    if (result.status === "OK") {
-                        location.href = "principal.html";
+                    if (result.status=="OK"){
+                        sessionStorage.setItem("csrf_token",result.csrf_token)
+                        sessionStorage.setItem("perfil",result.perfil)
+                        location.href="principal.html";
                     } else {
-                        document.getElementsByClassName("error")[0].textContent = "Usuario/clave errónea";
-                        document.getElementsByClassName("error")[0].style.display = "block";
+                        document.getElementsByClassName("error")[0].style.display="block";
                     }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementsByClassName("error")[0].textContent = "Error en la conexión con el servidor.";
-                    document.getElementsByClassName("error")[0].style.display = "block";
-                });
+                .catch(error => console.log('error', error)); 
         }
     </script>
 </head>
@@ -48,8 +45,8 @@
             <label for="username">Usuario</label>
             <input type="text" name="username" id="username" placeholder="Ingresa tu usuario">
             
-            <label for="passwordd">Clave</label>
-            <input type="password" name="password" id="passwordd" placeholder="Ingresa tu clave">
+            <label for="password">Clave</label>
+            <input type="password" name="password" id="password" placeholder="Ingresa tu clave">
             
             <span class="error">Usuario/clave errónea</span>
             

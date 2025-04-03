@@ -2,53 +2,69 @@ version: '3'
 services:
   mariadb:
     image: mariadb
-    container_name: mariadb
+    container_name: mariadba5
     restart: always
     environment:
-      MARIADB_ROOT_PASSWORD: example
-      MARIADB_USER: agente
-      MARIADB_USER_PASSWORD: 0traClave
-      MARIADB_DATABASE: PEPS
+      MYSQL_DATABASE: PEPS
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
     volumes:
-      - ./mariadb_data:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
       - ./db.sql:/docker-entrypoint-initdb.d/db.sql
-    user: root
-    ports:
-      - 3306:3306
+    secrets:
+      - db_root_password
   phpmyadmin:
     image: phpmyadmin
-    container_name: phpmyadmin
+    container_name: phpmyadmina5
     restart: always
     environment:
-      - PMA_HOST=mariadb
+      PMA_ARBITRARY: 1
+      PMA_HOST: mariadb
     ports:
-      - 9093:80
+      - 7005:80
     depends_on:
       - mariadb
+    links:
+      - mariadb
   apache:
-    container_name: apache
+    container_name: apachea5
     build: ./apache
     ports:
-      - 7777:80
+      - 6005:80
     volumes:
       - apache_fotos:/var/www/html/fotos 
   python:
     build: .
-    container_name: python
+    container_name: pythona5
+    restart: always
     environment:
-      DB_USERNAME: root
-      DB_PASSWORD: example
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
+      WTF_CSRF_SECRET_KEY: ${WTF_CSRF_SECRET_KEY} 
       DB_DATABASE: PEPS
       DB_HOST: mariadb
       DB_PORT: 3306
       PORT: 8080
       HOST: 0.0.0.0
     volumes:
-      - apache_fotos:/var/www/html/fotos  
-    ports:
-      - 9094:8080
+      - apache_fotos:/var/www/html/fotos 
+      - ./logapi/:/app/logs
     depends_on:
       - mariadb
+    links:
+      - mariadb
+    env_file: .env
+    
+secrets:
+  db_root_user:
+    file: ./secretos/db_root_user.txt
+  db_root_password:
+    file: ./secretos/db_root_password.txt
+  db_user_username:
+    file: ./secretos/db_user_username.txt
+  db_user_password:
+    file: ./secretos/db_user_password.txt
 
 volumes:
-  apache_fotos: 
+  apache_fotos:
+  mariadb_data:

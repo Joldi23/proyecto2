@@ -1,10 +1,10 @@
-from flask import request, jsonify, session
+from flask import request, jsonify, session, make_response
 import json
 import decimal
 from __main__ import app
 import controlador_usuarios
-from bd import obtener_conexion
-
+from datetime import datetime
+from funciones_auxiliares import Encoder, sanitize_input,validar_session_normal,validar_session_admin
 class Encoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, decimal.Decimal): return float(obj)
@@ -15,202 +15,221 @@ class Encoder(json.JSONEncoder):
 def bienvenido():
     if "usuario" in session:
         try:
-            conexion = obtener_conexion()
-            with conexion.cursor() as cursor:
-                query = """ SELECT id_clase, nombre, id_entrenador, capacidad, horario, duracion_minutos FROM clases """
-                cursor.execute(query)
-                clases = cursor.fetchall()
+            clases_data = controlador_usuarios.obtener_clases()
+            if clases_data is None:
+                return jsonify({"status": "ERROR", "mensaje": "Error al obtener clases"}), 500
 
-            conexion.close()
-
-
-            clases_data = [
-                {
-                    "id_clase": clase[0],
-                    "nombre": clase[1],
-                    "id_entrenador": clase[2],
-                    "capacidad": clase[3],
-                    "horario": clase[4].strftime('%Y-%m-%d %H:%M:%S'),
-                    "duracion_minutos": clase[5],
-                }
-                for clase in clases
-            ]
-            
-            dni = session["dni"]
-            conexion = obtener_conexion()
-            cursor = conexion.cursor()
-            cursor.execute("SELECT foto FROM usuarios WHERE dni=%s", (dni,))
-            resultado = cursor.fetchone()
-            conexion.close()
-            foto = resultado[0] if resultado and resultado[0] else ""
+            foto = controlador_usuarios.obtener_foto_usuario(session.get("dni"))
+            if foto is None:
+                return jsonify({"status": "ERROR", "mensaje": "Error al obtener la foto"}), 500
 
             return jsonify({
                 "status": "OK",
                 "usuario": session["usuario"],
                 "foto": foto,
-                "es_trabajador" :session["es_trabajador"],
+                "es_trabajador": session.get("es_trabajador"),
                 "clases": clases_data
             }), 200
 
         except Exception as e:
-            print(f"Error al obtener las clases: {e}")
+            app.logger.error(f"Error en la ruta /bienvenido: {e}")
             return jsonify({"status": "ERROR", "mensaje": "Error del servidor"}), 500
     else:
         return jsonify({"status": "ERROR", "mensaje": "No has iniciado sesión."}), 401
 
-@app.route("/clase/<id>", methods=["GET"])
+
+
+
+@app.route("/clase/<id>",methods=["GET"])
 def clase_por_id(id):
-    try:
-        id_int = int(id)
-        clase, code = controlador_usuarios.obtener_clase_por_id(id_int)
-        return json.dumps(clase, cls=Encoder), int(code)
-    except ValueError:
-        return json.dumps({"error": "ID inválido"}), 400
+    id = sanitize_input(id)
+    if isinstance(id, str) and len(id)<64:
+        if (validar_session_normal()):
+            respuesta,code = controlador_usuarios.obtener_clase_por_id(id)
+        else:
+            respuesta={"status":"Forbidden"}
+            code=403
+    else:
+        respuesta={"status":"Bad parameters"}
+        code=401
+    response= make_response(json.dumps(respuesta, cls=Encoder), code)
+    return response
 
 
 
 
-@app.route("/obtener_dni", methods=["GET"])
-def obtener_dni_endpoint():
-    try:
-        email = session.get("usuario") 
+# @app.route("/obtener_dni", methods=["GET"])  #BORRAR
+# def obtener_dni_endpoint():
+#     try:
+#         email = session.get("usuario") 
 
-        if not email:
-            return jsonify({"status": "ERROR", "mensaje": "No se ha iniciado sesión"}), 400
+#         if not email:
+#             return jsonify({"status": "ERROR", "mensaje": "No se ha iniciado sesión"}), 400
 
-        resultado = controlador_usuarios.obtener_dni_por_usuario(email)
-        return jsonify(resultado)
+#         resultado = controlador_usuarios.obtener_dni_por_usuario(email)
+#         return jsonify(resultado)
 
-    except Exception as e:
-        print(f"Error en /api/obtener_dni: {e}")
-        return jsonify({"status": "ERROR", "mensaje": "Error interno del servidor"}), 500
+#     except Exception as e:
+#         print(f"Error en /api/obtener_dni: {e}")
+#         return jsonify({"status": "ERROR", "mensaje": "Error interno del servidor"}), 500
+
 
 
 
 @app.route("/agregarclase", methods=["POST"])
 def guardar_clase():
-    content_type = request.headers.get("Content-Type")
-    if content_type == "application/json":
-        try:
-            clase_json = request.json
-            required_fields = ["dni", "nombre", "capacidad", "horario", "duracion_minutos"]
-            for field in required_fields:
-                if field not in clase_json:
-                    return json.dumps({"status": "Bad request", "message": f"Falta el campo: {field}"}), 400
+    content_type = request.headers.get('Content-Type')
+    if content_type == 'application/json':
+        clase_json = request.json
+        if "nombre" in clase_json and "capacidad" in clase_json and "horario" in clase_json and "duracion_minutos" in clase_json:
+            nombre = sanitize_input(clase_json["nombre"])
+            capacidad = clase_json["capacidad"]
+            duracion_minutos = clase_json["duracion_minutos"]
+            try:
+                horario = datetime.strptime(clase_json["horario"], "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                return json.dumps({
+                    "status": "Bad request",
+                }), 400
                 
-            from datetime import datetime
+            usuario = session["usuario"]
+            if usuario and isinstance(nombre, str) and isinstance(capacidad, (int, float)) and isinstance(horario, datetime) and isinstance(duracion_minutos, (int, float)) and len(nombre) < 128 and len(str(capacidad)) < 512 and len(str(duracion_minutos)) < 512:     
+                if validar_session_admin():
+                    respuesta, code = controlador_usuarios.insertar_clase(usuario, nombre, capacidad, horario, duracion_minutos)
+                else:
+                    respuesta = {"status": "Forbidden"}
+                    code = 403
+            else:
+                respuesta = {"status": "Bad request"}
+                code = 401
+        else:
+            respuesta = {"status": "Bad request"}
+            code = 401
+    else:
+        respuesta = {"status": "Bad request"}
+        code = 401
+    
+    response = make_response(json.dumps(respuesta, cls=Encoder),code)  
+    return response
+
+@app.route("/actualizarclase", methods=["PUT"])
+def actualizar_clase():
+    content_type = request.headers.get('Content-Type')
+    
+    print(f"Content-Type recibido: {content_type}")
+    
+    if content_type == 'application/json':
+        clase_json = request.json
+        if "id_clase" in clase_json and "nombre" in clase_json and "capacidad" in clase_json and "horario" in clase_json and "duracion_minutos" in clase_json:
+            id = clase_json["id_clase"]
+            nombre = sanitize_input(clase_json["nombre"])
+            capacidad = clase_json["capacidad"]
+            duracion_minutos = clase_json["duracion_minutos"]
             try:
                 horario = datetime.strptime(clase_json["horario"], "%Y-%m-%d %H:%M:%S")
-            except ValueError:
-                return json.dumps({
-                    "status": "Bad request",
-                    "message": "El campo 'horario' debe estar en formato 'YYYY-MM-DD HH:MM:SS'"
-                }), 400
-            
-            ret, code = controlador_usuarios.insertar_clase(
-                dni=clase_json["dni"],
-                nombre=clase_json["nombre"],
-                capacidad=int(clase_json["capacidad"]),
-                horario=horario.strftime("%Y-%m-%d %H:%M:%S"),
-                duracion_minutos=int(clase_json["duracion_minutos"])
-            )
-        except Exception as e:
-            ret = {"status": "Failure", "message": "Error interno del servidor"}
-            code = 500      
-    else:
-        ret = {"status": "Bad request", "message": "Content-Type debe ser application/json"}
-        code = 400
-
-    return json.dumps(ret), code
-
-
-
-@app.route("/actualizar/<id_clase>", methods=["PUT"])
-def actualizar_clase_por_id(id_clase):
-    content_type = request.headers.get("Content-Type")
-    if content_type == "application/json":
-        try:
-            clase_json = request.json
-            required_fields = ["id_entrenador", "nombre", "capacidad", "horario", "duracion_minutos"]
-            for field in required_fields:
-                if field not in clase_json:
-                    return json.dumps({"status": "Bad request", "message": f"Falta el campo: {field}"}), 400
-            from datetime import datetime
+            except ValueError as e:
+                return json.dumps({"status": "Bad request"}), 400
+                
+            usuario = session["usuario"]
+            if not usuario:
+                return json.dumps({"status": "Unauthorized"}), 401
             try:
-                horario = datetime.strptime(clase_json["horario"], "%Y-%m-%d %H:%M:%S")
+                id = int(id)
+                capacidad = int(capacidad)
+                duracion_minutos = int(duracion_minutos)
             except ValueError:
-                return json.dumps({
-                    "status": "Bad request",
-                    "message": "El campo 'horario' debe estar en formato 'YYYY-MM-DD HH:MM:SS'"
-                }), 400
-
-            ret, code = controlador_usuarios.actualizar_clase(
-                id_clase=id_clase,
-                id_entrenador=clase_json["id_entrenador"],  
-                nombre=clase_json["nombre"],
-                capacidad=int(clase_json["capacidad"]),
-                horario=horario.strftime("%Y-%m-%d %H:%M:%S"),
-                duracion_minutos=int(clase_json["duracion_minutos"])
-            )
-        except Exception as e:
-            print(f"Error al procesar la solicitud: {e}")
-            ret = {"status": "Failure", "message": "Error interno del servidor"}
-            code = 500
+                return json.dumps({"status": "Bad request"}), 400
+            if (
+                isinstance(id, int) and  
+                usuario and 
+                isinstance(nombre, str) and 
+                isinstance(capacidad, int) and 
+                isinstance(horario, datetime) and 
+                isinstance(duracion_minutos, int) and 
+                len(str(id)) < 10 and  
+                len(nombre) < 128 and 
+                len(str(capacidad)) < 512 and 
+                len(str(duracion_minutos)) < 512
+            ):  
+                if validar_session_normal():
+                    respuesta, code = controlador_usuarios.actualizar_clase(usuario, id, nombre, capacidad, horario, duracion_minutos)
+                else:
+                    respuesta = {"status": "Forbidden"}
+                    code = 403
+            else:
+                respuesta = {"status": "Bad request"}
+                code = 401
+        else:
+            respuesta = {"status": "Bad request"}
+            code = 401
     else:
-        ret = {"status": "Bad request", "message": "Content-Type debe ser application/json"}
+        respuesta = {"status": "Bad request"}
+        code = 401
+    
+    response = make_response(json.dumps(respuesta, cls=Encoder), code)
+    return response
+
+
+
+
+
+@app.route("/actualizarDA", methods=["PUT"])
+def actualizar_usu():
+    content_type = request.headers.get('Content-Type')
+    if content_type == 'application/json':
+        clase_json = request.json
+        if "nombre" in clase_json and "apellido1" in clase_json and "apellido2" in clase_json and "telefono" in clase_json:
+            nombre = sanitize_input(clase_json["nombre"])
+            apellido1 = sanitize_input(clase_json["apellido1"])
+            apellido2 = sanitize_input(clase_json["apellido2"])
+            telefono = sanitize_input(clase_json["telefono"])
+            num_tarjeta = sanitize_input(clase_json.get("num_tarjeta", ""))
+            usuario = session["usuario"]
+            if isinstance(nombre, str) and isinstance(apellido1, str) and isinstance(apellido2, str) and telefono.isnumeric() and \
+               len(nombre) < 128 and len(apellido1) < 128 and len(apellido2) < 128 and len(telefono) < 10 and \
+               (num_tarjeta == "" or (num_tarjeta.isnumeric() and len(num_tarjeta) < 12)):
+
+                telefono = int(telefono)
+                
+                if validar_session_normal():  
+                    respuesta, code = controlador_usuarios.actualizarD(nombre, apellido1, apellido2, telefono, num_tarjeta, usuario)
+                else:
+                    respuesta = {"status": "Forbidden"}
+                    code = 403
+            else:
+                respuesta = {"status": "Bad request", "message": "Datos no válidos"}
+                code = 400
+        else:
+            respuesta = {"status": "Bad request", "message": "Campos incompletos"}
+            code = 400
+    else:
+        respuesta = {"status": "Bad request", "message": "Content-Type incorrecto"}
         code = 400
-
-    return json.dumps(ret), code
-
-
-
-@app.route("/actualizarD/<dni>", methods=["PUT"])
-def actualizarDA(dni):
-    content_type = request.headers.get("Content-Type")
-    if content_type != "application/json":
-        return json.dumps({"status": "Bad request", "message": "Content-Type debe ser application/json"}), 400
-
-    try:
-        clase_json = request.get_json()
-        if not clase_json:
-            return json.dumps({"status": "Bad request", "message": "Cuerpo JSON vacío o inválido"}), 400
-
-        # Validar campos obligatorios
-        required_fields = ["nombre", "apellido1", "apellido2", "email", "telefono"]
-        for field in required_fields:
-            if field not in clase_json:
-                return json.dumps({"status": "Bad request", "message": f"Falta el campo: {field}"}), 400
-
-        ret, code = controlador_usuarios.actualizarD(
-            nombre=clase_json["nombre"],
-            apellido1=clase_json["apellido1"],
-            apellido2=clase_json["apellido2"],
-            email=clase_json["email"],
-            telefono=clase_json["telefono"],
-            dni=dni,
-            num_tarjeta=clase_json.get("num_tarjeta")
-        )
-
-    except Exception as e:
-        app.logger.error(f"Error al actualizar usuario: {e}", exc_info=True)
-        ret = {"status": "ERROR", "message": str(e)}
-        code = 500
-
-    return json.dumps(ret), code
+    
+    response = make_response(json.dumps(respuesta, cls=Encoder), code)
+    return response
 
 
-@app.route("/eliminar/<id>", methods=["DELETE"])
+
+@app.route("/eliminar/<int:id>", methods=["DELETE"])
 def eliminar_clase(id):
-    ret,code=controlador_usuarios.eliminar_clase(id)
-    return json.dumps(ret), code
+    if (validar_session_admin()):
+        respuesta,code=controlador_usuarios.eliminar_clase(id)
+    else: 
+        respuesta={"status":"Forbidden"}
+        code=403
+    response= make_response(json.dumps(respuesta, cls=Encoder), code)
+    return response
 
 
 
-@app.route("/dni/<dni>", methods=["GET"])
-def obtenerD(dni):
+@app.route("/datos", methods=["GET"])
+def obtener_datos_usuario():
+    if "usuario" not in session:
+        return jsonify({"error": "No autorizado"}), 403
+    usuario = session["usuario"]  # Obtener DNI desde la sesión
     try:
-        clase, code = controlador_usuarios.obtener_datos(dni)
-        return json.dumps(clase, cls=Encoder), code 
+        clase, code = controlador_usuarios.obtener_datos(usuario)
+        return jsonify(clase), code
     except ValueError:
-        return json.dumps({"error": "ID inválido"}), 400
-
+        return jsonify({"error": "ID inválido"}), 400

@@ -1,147 +1,145 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Bienvenida</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
-    <title>Bienvenido</title>
+    <style>
+        .oculto {
+            display: none;
+        }
+    </style>
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
-    fetch("/api/bienvenido", { method: "GET" })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === "OK") {
-                const navbarStart = document.querySelector(".navbar-start");
-                const clasesContainer = document.getElementById("mensaje");
-                const fotoContainer = document.getElementById("foto-container");
-                const usuario = data.usuario;
-                const foto = data.foto;
-                const clases = data.clases;
-                const esTrabajador = data.es_trabajador;
+        var myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+        if (sessionStorage.getItem("csrf_token")) {
+            myHeaders.append("X-CSRFToken", sessionStorage.getItem("csrf_token"));
+        }
 
-                
-                if (esTrabajador) {
-                    const clasesLink = document.createElement("a");
-                    clasesLink.className = "navbar-item";
-                    clasesLink.href = "/agregar_clase.html";
-                    clasesLink.textContent = "Clases";
-                    navbarStart.prepend(clasesLink);
+        var perfil = false;
+
+        onload = function () {
+            if (sessionStorage.getItem("perfil")) {
+                perfil = sessionStorage.getItem("perfil") === "1";
+                if (perfil) {
+                    document.getElementById("enlaceAgregar").classList.remove("oculto");
+                } else {
+                    document.getElementById("editarHeader").classList.add("oculto");
+                    document.getElementById("eliminarHeader").classList.add("oculto");
                 }
-
-                let html = `<h1 class="title is-3">Bienvenido, ${usuario}!</h1>`;
-
-                fotoContainer.innerHTML = `
-                    <figure class="image is-48x48">
-                        <img src="/${foto}" alt="Foto de perfil" style="border-radius: 50%;">
-                    </figure>
-                `;
-
-                html += `
-                    <div class="table-container">
-                        <table class="table is-bordered is-striped is-hoverable">
-                            <thead>
-                                <tr>
-                                    ${esTrabajador ? '<th>ID Clase</th>' : ''}
-                                    <th>Nombre de la Clase</th>
-                                    <th>Entrenador</th>
-                                    <th>Capacidad</th>
-                                    <th>Horario</th>
-                                    <th>Duración (minutos)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
-                clases.forEach(clase => {
-                    html += `
-                        <tr>
-                            ${esTrabajador ? `<td><a href="/editar_clase.html?id_clase=${clase.id_clase}">${clase.id_clase}</a></td>` : ''}
-                            <td>${clase.nombre}</td>
-                            <td>${clase.id_entrenador}</td>
-                            <td>${clase.capacidad}</td>
-                            <td>${clase.horario}</td>
-                            <td>${clase.duracion_minutos}</td>
-                        </tr>
-                    `;
-                });
-
-                html += `
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-
-                clasesContainer.innerHTML = html;
-            } else {
-                alert(data.mensaje || "Error al cargar los datos");
             }
-        })
-        .catch(error => {
-            console.error("Error al obtener los datos:", error);
-        });
-});
+            cargarClases();
+        }
 
+        function pintarClases(lista) {
+            let tbody = document.getElementsByTagName("tbody")[0];
+            tbody.innerHTML = "";
+
+            lista.forEach(clase => {
+                let texto = `<tr>
+                        <td>${clase.nombre}</td>
+                        <td>${clase.id_entrenador}</td>
+                        <td>${clase.capacidad}</td>
+                        <td>${clase.horario}</td>
+                        <td>${clase.duracion_minutos}</td>`;
+                if (perfil) {
+                    texto += `<td><a href="editar_clase.html?id_clase=${clase.id_clase}" class="button is-info">Editar</a></td>
+                              <td><button class="button is-danger" onclick="eliminarClase(${clase.id_clase})">Eliminar</button></td>`;
+                }
+                texto += `</tr>`;
+                tbody.innerHTML += texto;
+            });
+        }
+
+        function cargarClases() {
+            fetch("/api/bienvenido", { method: "GET", headers: myHeaders })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === "OK") {
+                        pintarClases(result.clases);
+                    } else {
+                        alert(result.mensaje || "Error al cargar los datos");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al obtener los datos:", error);
+                    alert("Se ha producido un error al recuperar las clases");
+                });
+        }
+
+        function eliminarClase(id){
+            var requestOptions = {
+                method: 'DELETE',
+                headers: myHeaders,
+            };
+
+            fetch("/api/eliminar/" + id, requestOptions)
+    .then(response => response.json()) 
+    .then(result => {
+        console.log("Resultado JSON recibido:", result); // Agrega esto para ver la respuesta
+        if (result.status === "OK") {
+            alert("Clase eliminada");
+            cargarClases();
+        } else {
+            alert("La clase no ha podido ser eliminada");
+        }
+    })
+    .catch(error => {
+        console.log('Error en la petición fetch:', error);
+        alert("Se ha producido un error y la clase no ha podido ser eliminada");
+    });
+
+        }
 
         function cerrarSesion() {
-            var requestOptions = {
-                method: 'GET'
-            };
-            fetch("/api/logout", requestOptions)
+            fetch("/api/logout", { method: 'GET', headers: myHeaders })
                 .then(response => response.json())
                 .then(result => {
                     if (result.status == "OK") {
-                        location.href = "/index.html";
+                        location.href = "index.html";
                     } else {
                         alert("No se ha podido cerrar sesión");
                     }
                 })
                 .catch(error => {
-                    console.log('error', error);
+                    console.error("Error:", error);
                     alert("Se ha producido un error y no se ha podido cerrar sesión");
                 });
         }
     </script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
-        #mensaje {
-            margin-top: 20px;
-            font-size: 24px;
-            color: #333;
-        }
-        #membresia-info {
-            margin-top: 20px;
-            font-size: 20px;
-            color: #333;
-        }
-        .table-container {
-            margin-top: 20px;
-            max-width: 100%;
-            overflow-x: auto;
-        }
-    </style>
 </head>
 <body>
     <nav class="navbar is-warning" role="navigation" aria-label="main navigation">
         <div class="navbar-menu">
             <div class="navbar-start">
-                <a class="navbar-item" href="/vermembre.html">Área Personal</a>
+                <a class="navbar-item" href="vermembre.html">Área Personal</a>
                 <a class="navbar-item" href="javascript:cerrarSesion()">Cerrar sesión</a>
-            </div>
-            <div class="navbar-end">
-                <div class="navbar-item" id="foto-container">
-                </div>
             </div>
         </div>
     </nav>
 
     <section class="section">
-        <div class="container">
-            <h1 class="title is-3">Página de Bienvenida</h1>
-            <div id="mensaje">Cargando información...</div>
-            <div id="membresia-info"></div>
+        <div class="columns">
+            <div class="column">
+                <h3 class="is-size-3">Clases Disponibles</h3>
+                <a id="enlaceAgregar" href="agregar_clase.html" class="button is-success oculto">Agregar Clase</a>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nombre de la Clase</th>
+                            <th>Entrenador</th>
+                            <th>Capacidad</th>
+                            <th>Horario</th>
+                            <th>Duración (minutos)</th>
+                            <th id="editarHeader">Editar</th>
+                            <th id="eliminarHeader">Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </section>
 </body>
