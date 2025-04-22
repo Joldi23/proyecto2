@@ -30,6 +30,7 @@ services:
     build: ./apache
     ports:
       - 6005:80
+      - 6015:443
     volumes:
       - apache_fotos:/var/www/html/fotos 
   python:

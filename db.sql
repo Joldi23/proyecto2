@@ -85,7 +85,7 @@ DELIMITER ;
 
 --INSERT DE UN USUARIO QUE ES TRABAJADOR
 
-INSERT INTO usuarios (dni, nombre, apellido1, apellido2, email, telefono, fecha_nacimiento, password, es_trabajador,estado) 
+INSERT INTO usuarios (dni, nombre, apellido1, apellido2, email, telefono, fecha_nacimiento, password, perfil,estado) 
 VALUES ('12345678A', 'Juan', 'Pérez', 'Gómez', 'trabajador1@gmail.com', '600123456', '1990-05-15', '$2b$12$W75ocsoaN8eC62n4rljG4e2L9qwqYhmcxuJbGzvfZ5EfW8CcNISLm', TRUE,'activo');
 
 --la contraseña del usuario es '12345'
