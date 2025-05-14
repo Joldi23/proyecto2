@@ -61,4 +61,7 @@ class TestInsertarClase(unittest.TestCase):
         self.assertEqual(codigo, 500)
 
 if __name__ == '__main__':
-    unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(TestInsertarClase))
+    import xmlrunner
+    runner = xmlrunner.XMLTestRunner(output='test-reports')
+    unittest.main(testRunner=runner, verbosity=2)
+
