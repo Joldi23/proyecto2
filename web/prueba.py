@@ -8,20 +8,25 @@ class TestInsertarClase(unittest.TestCase):
     def test_insertar_clase_exitosa(self, mock_connect):
         """✅ Prueba de inserción exitosa"""
 
+        # Crear mocks para la conexión y el cursor
         mock_conexion = MagicMock()
         mock_cursor = MagicMock()
         mock_conexion.cursor.return_value.__enter__.return_value = mock_cursor
-        mock_cursor.rowcount = 1  
+        mock_cursor.rowcount = 1  # Simula que la inserción fue exitosa
         mock_connect.return_value = mock_conexion
         
-
+        # Llamar a la función insertar_clase
         respuesta, codigo = insertar_clase("12345678", "Yoga", 20, "08:00", 60)
 
+        # Verificar las respuestas
         self.assertEqual(respuesta, {"status": "OK"})
         self.assertEqual(codigo, 200)
-        
 
-        mock_cursor.execute.assert_called_once()
+        # Verificar que se haya ejecutado el SELECT y el INSERT
+        mock_cursor.execute.assert_any_call('SELECT dni FROM usuarios WHERE email = %s', ('12345678',))
+        mock_cursor.execute.assert_any_call('INSERT INTO clases (id_entrenador, nombre, capacidad, horario, duracion_minutos) VALUES (%s, %s, %s, %s, %s)', ('12345678', 'Yoga', 20, '08:00', 60))
+
+        # Verificar que se haya llamado a commit y close
         mock_conexion.commit.assert_called_once()
         mock_conexion.close.assert_called_once()
     
@@ -43,7 +48,8 @@ class TestInsertarClase(unittest.TestCase):
         self.assertEqual(codigo, 200)
         
         # Verificar que se ejecutó la consulta SQL
-        mock_cursor.execute.assert_called_once()
+        mock_cursor.execute.assert_any_call('SELECT dni FROM usuarios WHERE email = %s', ('87654321',))
+        mock_cursor.execute.assert_any_call('INSERT INTO clases (id_entrenador, nombre, capacidad, horario, duracion_minutos) VALUES (%s, %s, %s, %s, %s)', ('87654321', 'Pilates', 15, '10:00', 45))
         mock_conexion.commit.assert_called_once()
         mock_conexion.close.assert_called_once()
     
@@ -64,4 +70,3 @@ if __name__ == '__main__':
     import xmlrunner
     runner = xmlrunner.XMLTestRunner(output='test-reports')
     unittest.main(testRunner=runner, verbosity=2)
-
